@@ -73,14 +73,12 @@ for (const item of registry.items) {
   }
 }
 
-// ── 5. Catalog registry.json in output ──────────────────────────────
+// ── 5. Catalog is served dynamically — assert no static file ─────
 try {
-  const catData = JSON.parse(await readFile(path.join(outDir, "registry.json"), "utf8"))
-  if (catData.name !== registry.name) {
-    failures.push("public/r/registry.json — name mismatch")
-  }
+  await access(path.join(outDir, "registry.json"))
+  failures.push("public/r/registry.json — should not exist (served dynamically)")
 } catch {
-  failures.push("public/r/registry.json — missing or invalid")
+  /* expected — catalog is served by the route handler */
 }
 
 // ── Summary ─────────────────────────────────────────────────────────

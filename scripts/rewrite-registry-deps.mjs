@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { mkdir, readFile, writeFile, rm } from "node:fs/promises"
 import path from "node:path"
 
 const root = process.cwd()
@@ -61,6 +61,12 @@ if (!items.some((i) => i.name === "registry")) {
     JSON.stringify(registry, null, 2)
   )
 }
+
+// Remove the catalog file — served dynamically by the registry.json route.
+// Keeping it would conflict with route handlers at the same path.
+try {
+  await rm(path.join(outDir, "registry.json"))
+} catch { /* non-fatal if already absent */ }
 
 console.log(
   `Rewrote dependencies for ${rewritten} item(s) using origin ${origin}.`
