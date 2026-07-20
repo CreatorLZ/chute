@@ -1,0 +1,86 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "chute",
+  "author": "chute",
+  "homepage": "http://localhost:3000",
+  "items": [
+    {
+      "name": "attachment",
+      "type": "registry:ui",
+      "title": "Attachment",
+      "description": "Composable attachment row primitives for upload previews and uploaded files.",
+      "categories": ["upload"],
+      "files": [
+        {
+          "path": "src/components/ui/attachment.tsx",
+          "type": "registry:ui",
+          "target": "@ui/attachment.tsx"
+        }
+      ]
+    },
+    {
+      "name": "upload-router",
+      "type": "registry:item",
+      "title": "Upload Router",
+      "description": "Next.js App Router UploadThing routes for avatar, image, and attachment uploads.",
+      "dependencies": ["uploadthing"],
+      "envVars": {
+        "UPLOADTHING_TOKEN": ""
+      },
+      "files": [
+        {
+          "path": "src/app/api/uploadthing/core.ts",
+          "type": "registry:file",
+          "target": "app/api/uploadthing/core.ts"
+        },
+        {
+          "path": "src/app/api/uploadthing/route.ts",
+          "type": "registry:file",
+          "target": "app/api/uploadthing/route.ts"
+        }
+      ]
+    },
+    {
+      "name": "upload-field",
+      "type": "registry:component",
+      "title": "Upload Field",
+      "description": "Drag-and-drop UploadThing upload field with manual queueing, retries, previews, and react-hook-form-compatible metadata values.",
+      "categories": ["forms", "upload"],
+      "dependencies": ["@uploadthing/react", "uploadthing"],
+      "registryDependencies": ["button", "card", "progress", "attachment", "upload-router"],
+      "files": [
+        {
+          "path": "src/components/upload-field.tsx",
+          "type": "registry:component",
+          "target": "@components/upload-field.tsx"
+        },
+        {
+          "path": "src/hooks/use-upload-field.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-upload-field.ts"
+        },
+        {
+          "path": "src/lib/uploadthing.ts",
+          "type": "registry:lib",
+          "target": "@lib/uploadthing.ts"
+        }
+      ]
+    },
+    {
+      "name": "upload-presets",
+      "type": "registry:component",
+      "title": "Upload Presets",
+      "description": "Avatar, attachment, image gallery, and instant upload presets built on Upload Field.",
+      "categories": ["forms", "upload"],
+      "dependencies": ["@uploadthing/react", "uploadthing"],
+      "registryDependencies": ["upload-field"],
+      "files": [
+        {
+          "path": "src/components/upload-presets.tsx",
+          "type": "registry:component",
+          "target": "@components/upload-presets.tsx"
+        }
+      ]
+    }
+  ]
+}

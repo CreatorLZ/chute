@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "upload-router",
+  "title": "Upload Router",
+  "description": "Next.js App Router UploadThing routes for avatar, image, and attachment uploads.",
+  "dependencies": [
+    "uploadthing"
+  ],
+  "files": [
+    {
+      "path": "src/app/api/uploadthing/core.ts",
+      "content": "import { createUploadthing, type FileRouter } from \"uploadthing/next\"\nimport { UploadThingError } from \"uploadthing/server\"\n\nconst f = createUploadthing()\n\n// Auth placeholder — replace with your project's auth lookup.\n// Example:\n//   import { auth } from \"@/lib/auth\"\n//   const session = await auth()\n//   if (!session?.user) throw new UploadThingError(\"Unauthorized\")\n//   return { uploadedBy: session.user.id }\nasync function getUploadUser(): Promise<{ uploadedBy: string }> {\n  throw new UploadThingError(\"Unauthorized\")\n}\n\nexport const ourFileRouter = {\n  avatarUploader: f({ image: { maxFileSize: \"4MB\", maxFileCount: 1 } })\n    .middleware(async () => {\n      return getUploadUser()\n    })\n    .onUploadComplete(async ({ metadata }) => {\n      return { uploadedBy: metadata.uploadedBy }\n    }),\n\n  imageUploader: f({ image: { maxFileSize: \"16MB\", maxFileCount: 10 } })\n    .middleware(async () => {\n      return getUploadUser()\n    })\n    .onUploadComplete(async ({ metadata }) => {\n      return { uploadedBy: metadata.uploadedBy }\n    }),\n\n  attachmentUploader: f({\n    image: { maxFileSize: \"16MB\", maxFileCount: 5 },\n    pdf: { maxFileSize: \"16MB\", maxFileCount: 5 },\n    text: { maxFileSize: \"4MB\", maxFileCount: 5 },\n  })\n    .middleware(async () => {\n      return getUploadUser()\n    })\n    .onUploadComplete(async ({ metadata }) => {\n      return { uploadedBy: metadata.uploadedBy }\n    }),\n} satisfies FileRouter\n\nexport type OurFileRouter = typeof ourFileRouter\n",
+      "type": "registry:file",
+      "target": "app/api/uploadthing/core.ts"
+    },
+    {
+      "path": "src/app/api/uploadthing/route.ts",
+      "content": "import { createRouteHandler } from \"uploadthing/next\"\nimport { ourFileRouter } from \"./core\"\n\nexport const { GET, POST } = createRouteHandler({\n  router: ourFileRouter,\n})\n",
+      "type": "registry:file",
+      "target": "app/api/uploadthing/route.ts"
+    }
+  ],
+  "envVars": {
+    "UPLOADTHING_TOKEN": ""
+  },
+  "type": "registry:item"
+}

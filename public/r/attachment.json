@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "attachment",
+  "title": "Attachment",
+  "description": "Composable attachment row primitives for upload previews and uploaded files.",
+  "files": [
+    {
+      "path": "src/components/ui/attachment.tsx",
+      "content": "import * as React from \"react\"\n\nimport { Button } from \"@/components/ui/button\"\nimport { cn } from \"@/lib/utils\"\n\nfunction Attachment({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"attachment\"\n      className={cn(\n        \"group/attachment flex min-w-0 items-center gap-3 rounded-lg border bg-background p-2.5 text-sm\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentMedia({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"attachment-media\"\n      className={cn(\n        \"flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/40 text-muted-foreground\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentContent({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"attachment-content\"\n      className={cn(\"min-w-0 flex-1 space-y-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentTitle({\n  className,\n  ...props\n}: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"attachment-title\"\n      className={cn(\"truncate font-medium leading-none\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentDescription({\n  className,\n  ...props\n}: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"attachment-description\"\n      className={cn(\"truncate text-xs text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentActions({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"attachment-actions\"\n      className={cn(\"flex shrink-0 items-center gap-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentAction({\n  className,\n  variant = \"ghost\",\n  size = \"xs\",\n  ...props\n}: React.ComponentProps<typeof Button>) {\n  return (\n    <Button\n      data-slot=\"attachment-action\"\n      variant={variant}\n      size={size}\n      className={cn(className)}\n      {...props}\n    />\n  )\n}\n\nfunction AttachmentGroup({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"attachment-group\"\n      className={cn(\"space-y-2\", className)}\n      {...props}\n    />\n  )\n}\n\nexport {\n  Attachment,\n  AttachmentAction,\n  AttachmentActions,\n  AttachmentContent,\n  AttachmentDescription,\n  AttachmentGroup,\n  AttachmentMedia,\n  AttachmentTitle,\n}\n",
+      "type": "registry:ui",
+      "target": "@ui/attachment.tsx"
+    }
+  ],
+  "categories": [
+    "upload"
+  ],
+  "type": "registry:ui"
+}
