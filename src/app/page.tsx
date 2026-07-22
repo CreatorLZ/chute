@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
+
+const AGENT_PROMPT = "Read https://chuteui.vercel.app/agents.md and follow it to install chute and add file uploads to this project."
 import {
   AttachmentUpload,
   AvatarUpload,
@@ -24,6 +26,15 @@ export default function Home() {
   const imagesUploadRef = useRef<UploadFieldHandle>(null)
   const [submittedData, setSubmittedData] = useState<FormValues | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyAgentPrompt = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(AGENT_PROMPT)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* clipboards fail silently */ }
+  }, [])
   const { control, handleSubmit, getValues, formState } = useForm<FormValues>({
     defaultValues: {
       avatar: null,
@@ -62,7 +73,16 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <div className="mb-8 space-y-2">
-        <h1 className="text-2xl font-semibold">Upload Field v0.5</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold">Upload Field v0.5</h1>
+          <button
+            type="button"
+            onClick={handleCopyAgentPrompt}
+            className="shrink-0 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {copied ? "Copied!" : "For AI agents"}
+          </button>
+        </div>
         <p className="text-sm text-muted-foreground">
           One UploadThing-powered engine, four ready-to-use presets.
         </p>
