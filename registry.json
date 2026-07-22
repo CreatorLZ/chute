@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "chute",
   "author": "chute",
-  "homepage": "http://localhost:3000",
+  "homepage": "https://chuteui.vercel.app",
   "items": [
     {
       "name": "attachment",

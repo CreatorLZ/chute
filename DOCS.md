@@ -40,7 +40,7 @@ Thin wrappers over `UploadField` for common patterns:
 Presets do not duplicate upload logic. Each is a thin wrapper — easy to read and customize by editing the installed component directly.
 
 **File Router** (`src/app/api/uploadthing/core.ts` and `route.ts`)\
-UploadThing `FileRouter` defining three endpoints (`avatarUploader`, `imageUploader`, `attachmentUploader`) with per-type size and count limits. Includes a dev-mode auth bypass and a production auth example in comments.
+UploadThing `FileRouter` defining three endpoints (`avatarUploader`, `imageUploader`, `attachmentUploader`) with per-type size and count limits. Ships with demo-mode auth (allows all uploads) and a production auth example in comments.
 
 ---
 
@@ -63,37 +63,23 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-Uploads will fail until auth is configured (see Auth section below).
+Uploads work out of the box with demo auth. See [Auth integration](#auth-integration) before deploying to production.
 
 ---
 
 ## Auth integration
 
-The installed router fails closed by default. Set `UPLOADTHING_TOKEN` for UploadThing itself, then replace `getUploadUser()` with your application's server-side auth lookup before uploads can succeed. A token is not user authentication and must never be used as an authorization check.
-
-The starter file router (`src/app/api/uploadthing/core.ts`) fails closed until you replace its auth lookup:
+The starter file router (`src/app/api/uploadthing/core.ts`) ships with demo-mode auth that allows all uploads:
 
 ```ts
 async function getUploadUser(): Promise<{ uploadedBy: string }> {
-  throw new UploadThingError(
-    "Unauthorized: replace getUploadUser() with your application's auth lookup."
-  )
-  /* Historical insecure example. Do not use this as authorization:
-  if (!process.env.UPLOADTHING_TOKEN) {
-    throw new UploadThingError(
-      "Unauthorized — set UPLOADTHING_TOKEN in .env.local"
-    )
-  }
   return { uploadedBy: "demo-user" }
-  */
 }
 ```
 
-Uploads remain rejected after setting `UPLOADTHING_TOKEN` until `getUploadUser()` is replaced with real application authentication.
+**This is not secure for production.** You must replace `getUploadUser()` with your application's real server-side auth lookup. A production example is included as a comment in the same file. The return value (`uploadedBy`) is available in `onUploadComplete` metadata and can be used for audit trails.
 
-**For production**, replace `getUploadUser` with your project's auth lookup. An example using a generic auth helper is included as a comment in the same file. The return value (`uploadedBy`) is available in `onUploadComplete` metadata and can be used for audit trails or access control.
-
-**Setup steps:**
+You also need an UploadThing token to authenticate your app with UploadThing (this is separate from user auth):
 
 1. Sign in at https://uploadthing.com/dashboard
 2. Create an app and copy its API token
@@ -105,7 +91,7 @@ UPLOADTHING_TOKEN=sk_live_...
 
 4. Restart the dev server.
 
-`.env.example` documents the token format without exposing a credential.
+`.env.example` documents the token format without exposing a credential. Note that an UploadThing token identifies your application to UploadThing — it is not user authentication and must never be used as an authorization check.
 
 ---
 
@@ -365,8 +351,8 @@ There is no provider abstraction layer. This keeps the code readable and avoids 
 **Next.js App Router only.**\
 Pages Router is not supported.
 
-**Auth stub is a dev convenience.**\
-The dev-mode bypass (`UPLOADTHING_TOKEN` check) is not secure for production. Replace `getUploadUser` with real auth before deploying.
+**Demo auth is not for production.**\
+The demo-mode `getUploadUser()` returns `{ uploadedBy: "demo-user" }` for all requests. Replace it with your own auth before deploying to production.
 
 **`entriesRef.current` mutation inside state updater.**\
 The ref is written inside `setFileEntries`'s updater function so that concurrent `addFiles` callers reading `entriesRef.current` (in the capacity check) see the latest value without waiting for a re-render. This is a deliberate tradeoff — the mutation is idempotent and invisible to React's rendering, but it violates the convention of keeping updaters pure.

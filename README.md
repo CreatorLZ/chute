@@ -3,10 +3,8 @@
 UploadThing-powered file upload components for Next.js App Router and shadcn/ui projects.
 
 ```bash
-npx shadcn add https://your-vercel-app.vercel.app/r/upload-field.json
+npx shadcn add https://chuteui.vercel.app/r/upload-field.json
 ```
-
-> **Update the URL** after deploying — see [Deploy your own](#deploy-your-own) below.
 
 ## What it is
 
@@ -29,13 +27,11 @@ npm run dev
 # http://localhost:3000
 ```
 
-Uploads fail until you wire in auth — see [Auth](#auth).
-
 ### Install into your own project
 
 ```bash
-npx shadcn add https://your-vercel-app.vercel.app/r/upload-field.json
-npx shadcn add https://your-vercel-app.vercel.app/r/upload-presets.json
+npx shadcn add https://chuteui.vercel.app/r/upload-field.json
+npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 ```
 
 This installs all source files into `src/`, resolves dependency chains, and writes `UPLOADTHING_TOKEN` to `.env.local`.
@@ -93,21 +89,14 @@ async function onSubmit() {
 
 ## Auth
 
-The starter router **rejects all uploads by default**. Two things are needed:
+The demo router allows all uploads (returns `{ uploadedBy: "demo-user" }`). **Replace `getUploadUser()` in `src/app/api/uploadthing/core.ts` with your own auth before deploying to production.** You'll also need an UploadThing token:
 
-1. **`UPLOADTHING_TOKEN`** — set in `.env.local` (get one at [uploadthing.com/dashboard](https://uploadthing.com/dashboard))
-2. **`getUploadUser()`** — replace the fail-closed stub in `src/app/api/uploadthing/core.ts` with your app's auth lookup
+1. Get a token at [uploadthing.com/dashboard](https://uploadthing.com/dashboard)
+2. Set it in `.env.local`:
 
-## Deploy your own
-
-Chute is a Next.js App Router project. Deploy it on Vercel:
-
-1. Push to GitHub
-2. Import into Vercel
-3. Set `UPLOADTHING_TOKEN` in environment variables
-4. Deploy
-
-After deploying, update the install URLs above to point to your Vercel domain.
+```env
+UPLOADTHING_TOKEN=sk_live_...
+```
 
 ## Registry
 
@@ -119,7 +108,7 @@ Serves as a shadcn registry in two modes:
 Set `REGISTRY_ORIGIN` before static build for deployable output:
 
 ```bash
-REGISTRY_ORIGIN=https://your-domain.com npm run registry:build
+REGISTRY_ORIGIN=https://chuteui.vercel.app npm run registry:build
 ```
 
 ## Commands

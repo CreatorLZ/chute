@@ -8,7 +8,7 @@
     "uploadthing"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/upload-field.json"
+    "https://chuteui.vercel.app/r/upload-field.json"
   ],
   "files": [
     {
