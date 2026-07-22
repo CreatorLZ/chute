@@ -31,10 +31,15 @@ npm run dev
 
 ```bash
 npx shadcn add https://chuteui.vercel.app/r/upload-field.json
+```
+
+Installs the core `UploadField` component, `useUploadField` hook, UploadThing route, and UI primitives (`button`, `card`, `progress`, `attachment`). Writes `UPLOADTHING_TOKEN` to `.env.local`.
+
+```bash
 npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 ```
 
-This installs all source files into `src/`, resolves dependency chains, and writes `UPLOADTHING_TOKEN` to `.env.local`.
+Also installs the four presets (`AvatarUpload`, `AttachmentUpload`, `ImageUpload`, `InstantUpload`). Requires `upload-field` first.
 
 ## Usage
 
