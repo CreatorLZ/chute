@@ -251,7 +251,7 @@ Available from `@/hooks/use-upload-field`:
 | `UploadMode` | `"manual" \| "auto"` |
 | `UploadError` | `string` |
 | `UploadFailedError` | Error containing `uploadedFiles` and `failedFiles` when `uploadAll()` cannot upload every file |
-| `FileEntry` | Full per-file state including `file`, `status`, `progress`, `previewUrl`, `error`, `result` |
+| `FileEntry` | Full per-file state including `file`, `status`, `progress`, `previewUrl`, `error` |
 
 Available from `@/components/upload-field`:
 
@@ -334,7 +334,6 @@ File entry state (`FileEntry[]`) is the hook's single source of truth. It tracks
 - **`progress`**: upload progress percentage (0–100)
 - **`previewUrl`**: `URL.createObjectURL` for image previews, revoked on upload success or removal
 - **`error`**: readable error message when status is `failed`
-- **`result`**: `UploadedFile` metadata when upload succeeds, used to fire `onUploadComplete`
 
 The `entriesRef` ref is synced with `fileEntries` state both inside the `setFileEntries` updater (for immediate synchronous access from `uploadAll`/`retryFile`) and in a passive `useEffect` (for React correctness). This is a controlled, intentional impurity — the ref mutation inside the updater is idempotent and has no effect on rendering.
 

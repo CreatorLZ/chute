@@ -24,7 +24,6 @@ export type FileEntry = {
   progress: number
   previewUrl?: string
   error?: string
-  result?: UploadedFile
 }
 
 export class UploadFailedError extends Error {

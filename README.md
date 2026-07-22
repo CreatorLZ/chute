@@ -1,265 +1,138 @@
-# Upload Field
+# Chute
 
-UploadThing-backed upload field for Next.js App Router projects.
+UploadThing-powered file upload components for Next.js App Router and shadcn/ui projects.
 
 ```bash
-npx shadcn add http://localhost:3000/r/upload-field.json
-npx shadcn add http://localhost:3000/r/upload-presets.json
+npx shadcn add https://your-vercel-app.vercel.app/r/upload-field.json
 ```
 
-> **Auth integration warning:** The starter router rejects all uploads by default. See [Environment](#environment) for details.
+> **Update the URL** after deploying — see [Deploy your own](#deploy-your-own) below.
 
-## What It Ships
+## What it is
 
-- `useUploadField()` headless queue/upload engine
-- `<UploadField />` styled default component
-- `<AvatarUpload />`, `<AttachmentUpload />`, `<ImageUpload />`, and `<InstantUpload />` preset components
-- `UploadFieldHandle` for parent form submit flows
-- `UploadedFile`, `UploadStatus`, `UploadMode`, `UploadError`, and queue types
-- App Router UploadThing route at `src/app/api/uploadthing`
-- Local `Attachment` primitives for file rows, inspired by shadcn/ui's attachment anatomy
+Chute fills a narrow gap: UploadThing ships functional upload primitives but lacks styled, form-integrated UI. Chute is the intersection — upload components designed for projects that use both shadcn/ui and UploadThing.
 
-## Presets
+## What ships
 
-Presets are thin wrappers over `UploadField`, so they stay easy to customize and do not duplicate upload logic.
+| Layer | Description |
+|---|---|
+| `useUploadField()` | Headless queue/upload engine — selection, async validation, progress, per-file retry, object URL lifecycle |
+| `<UploadField />` | Styled default component — drag-and-drop, previews, progress bars, keyboard operability, aria-live announcements |
+| 4 presets | `AvatarUpload`, `AttachmentUpload`, `ImageUpload`, `InstantUpload` — thin wrappers over `UploadField` |
+| File Router | UploadThing `FileRouter` with `avatarUploader`, `imageUploader`, `attachmentUploader` endpoints |
 
-```tsx
-import {
-  AttachmentUpload,
-  AvatarUpload,
-  ImageUpload,
-  InstantUpload,
-} from "@/components/upload-presets"
+## Quick start
+
+```bash
+npm install
+npm run dev
+# http://localhost:3000
 ```
 
-### Avatar
+Uploads fail until you wire in auth — see [Auth](#auth).
 
-```tsx
-<AvatarUpload
-  value={avatar}
-  onChange={setAvatar}
-/>
+### Install into your own project
+
+```bash
+npx shadcn add https://your-vercel-app.vercel.app/r/upload-field.json
+npx shadcn add https://your-vercel-app.vercel.app/r/upload-presets.json
 ```
 
-### Attachments
+This installs all source files into `src/`, resolves dependency chains, and writes `UPLOADTHING_TOKEN` to `.env.local`.
+
+## Usage
+
+### Manual upload (form submit)
 
 ```tsx
-<AttachmentUpload
-  value={attachments}
-  onChange={setAttachments}
-/>
-```
+const uploadRef = useRef<UploadFieldHandle>(null)
 
-### Image Gallery
-
-```tsx
-<ImageUpload
-  maxFiles={8}
-  value={images}
-  onChange={setImages}
-/>
-```
-
-### Instant Upload
-
-```tsx
-<InstantUpload
-  value={files}
-  onChange={setFiles}
-/>
-```
-
-## Manual Upload, Form Submit
-
-Manual mode is the default. Files are queued for review first, then uploaded when the form submits.
-
-```tsx
-"use client"
-
-import { useRef } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { UploadField, type UploadFieldHandle } from "@/components/upload-field"
-import type { UploadedFile } from "@/hooks/use-upload-field"
-
-type FormValues = {
-  attachments: UploadedFile[]
+async function onSubmit() {
+  const ref = uploadRef.current
+  if (!ref) return
+  await ref.uploadAll()
+  const values = getValues()
 }
 
-export function ExampleForm() {
-  const uploadRef = useRef<UploadFieldHandle>(null)
-  const { control, handleSubmit, getValues } = useForm<FormValues>({
-    defaultValues: { attachments: [] },
-  })
-
-  async function onSubmit() {
-    try {
-      await uploadRef.current?.uploadAll()
-    } catch {
-      // Keep the form open: failed files stay in the field for retry/removal.
-      return
-    }
-    const values = getValues()
-    console.log(values.attachments)
-  }
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Controller
-        name="attachments"
-        control={control}
-        render={({ field }) => (
-          <UploadField
-            ref={uploadRef}
-            endpoint="attachmentUploader"
-            multiple
-            maxFiles={5}
-            value={field.value}
-            onChange={field.onChange}
-            accept={["image/*", "application/pdf"]}
-          />
-        )}
-      />
-      <button type="submit">Submit</button>
-    </form>
-  )
-}
+// Pass uploadRef to UploadField via its ref prop:
+// <UploadField ref={uploadRef} endpoint="attachmentUploader" multiple />
 ```
 
-## Auto Upload
-
-Use auto mode for chat-style flows where selection should upload immediately.
+### Auto upload (chat-style)
 
 ```tsx
 <UploadField
   endpoint="attachmentUploader"
   uploadMode="auto"
   multiple
-  value={files}
-  onChange={setFiles}
 />
 ```
 
-## Validation
-
-Validation is library-neutral.
+### Validation
 
 ```tsx
 <UploadField
-  endpoint="attachmentUploader"
-  multiple
-  validate={(files) => {
-    const tooLarge = files.find((file) => file.size > 10 * 1024 * 1024)
-    return tooLarge ? `${tooLarge.name} is larger than 10MB.` : undefined
-  }}
+  validate={(files) =>
+    files.find((f) => f.size > 10 * 1024 * 1024)
+      ? "File too large" : undefined
+  }
   beforeUpload={async (files) => {
-    // Run async checks here.
+    // Async checks here
   }}
 />
 ```
 
-## Custom File Row
-
-Use `renderFile` when the default row is close but not quite your product.
+### Custom file row
 
 ```tsx
 <UploadField
-  endpoint="attachmentUploader"
-  multiple
-  renderFile={(entry, actions) => (
-    <div className="flex items-center justify-between rounded-md border p-2">
-      <span>{entry.file.name}</span>
-      {entry.status === "failed" ? (
-        <button type="button" onClick={actions.retry}>Retry</button>
-      ) : (
-        <button type="button" onClick={actions.remove}>Remove</button>
-      )}
-    </div>
-  )}
+  renderFile={(entry, actions) => <YourCustomRow />}
+  renderUploadedFile={(file, actions) => <YourCustomPreview />}
 />
 ```
 
-## Environment
+## Auth
 
-Set `UPLOADTHING_TOKEN` in `.env`.
+The starter router **rejects all uploads by default**. Two things are needed:
 
-```env
-UPLOADTHING_TOKEN=...
-```
+1. **`UPLOADTHING_TOKEN`** — set in `.env.local` (get one at [uploadthing.com/dashboard](https://uploadthing.com/dashboard))
+2. **`getUploadUser()`** — replace the fail-closed stub in `src/app/api/uploadthing/core.ts` with your app's auth lookup
 
-The starter router **rejects all uploads by default** until you wire in your auth. An UploadThing token is not user authentication. Replace `getUploadUser()` in `src/app/api/uploadthing/core.ts` with your project's auth lookup. See the inline comment in that file for an example.
+## Deploy your own
 
-## Route Presets
+Chute is a Next.js App Router project. Deploy it on Vercel:
 
-The demo router includes:
+1. Push to GitHub
+2. Import into Vercel
+3. Set `UPLOADTHING_TOKEN` in environment variables
+4. Deploy
 
-- `avatarUploader`: single image, `4MB`
-- `imageUploader`: up to 10 images, `16MB` each
-- `attachmentUploader`: images and PDFs up to `16MB`, text up to `4MB`
+After deploying, update the install URLs above to point to your Vercel domain.
 
-Adjust these limits to match the product using the component.
+## Registry
 
-## V1 Registry Endpoints
+Serves as a shadcn registry in two modes:
 
-This project now serves a local shadcn registry from the Next app.
+- **Dynamic (dev):** Next.js route handlers resolve items at request time
+- **Static (prod):** Pre-built JSON files in `public/r/` via `npm run registry:build`
 
-Catalog:
-
-```bash
-http://localhost:3000/r/registry.json
-```
-
-Items:
-
-```bash
-http://localhost:3000/r/attachment.json
-http://localhost:3000/r/upload-router.json
-http://localhost:3000/r/upload-field.json
-http://localhost:3000/r/upload-presets.json
-```
-
-Local install test from a fresh App Router project:
-
-```bash
-npx shadcn add http://localhost:3000/r/upload-field.json
-npx shadcn add http://localhost:3000/r/upload-presets.json
-```
-
-`upload-field` depends on `upload-router`, so the UploadThing route files and `UPLOADTHING_TOKEN` placeholder are installed with it. Set a real token and replace the fail-closed `getUploadUser()` implementation before testing uploads.
-
-The registry can be served in two modes:
-
-- **Dynamic (dev):** Next.js route handlers resolve each item at request time. Run `npm run dev`.
-- **Static (production):** Pre-built JSON files in `public/r/`. Run `npm run registry:build` then deploy the `public/` folder.
-
-### Dependency Resolution
-
-The shadcn CLI resolves `registryDependencies` as follows:
-
-- **Known shadcn items** (`button`, `card`, `progress`) — fetched from the default shadcn registry.
-- **Full URLs** (`http://...`) — fetched directly.
-- **Plain names** — fallback; only works for default shadcn items.
-
-Because local custom items (`attachment`, `upload-router`) must be full URLs:
-
-| Mode | Resolution | Source |
-|---|---|---|
-| Dynamic (`/r/*.json`) | `{origin}/r/{dep}.json` | Request URL at runtime |
-| Static (`public/r/*.json`) | `{origin}/r/{dep}.json` | `homepage` from `registry.json` or `REGISTRY_ORIGIN` env var |
-
-Set `REGISTRY_ORIGIN` before `npm run registry:build` for deployable output:
+Set `REGISTRY_ORIGIN` before static build for deployable output:
 
 ```bash
 REGISTRY_ORIGIN=https://your-domain.com npm run registry:build
 ```
 
-If omitted, `homepage` in `registry.json` is used (defaults to `http://localhost:3000`). A warning is printed for localhost origins but the build proceeds — useful for local testing.
+## Commands
 
-> **One-time-copy limitation:** Once installed via `npx shadcn add`, the code is copied into your project and does not receive updates. Re-run the install command to pick up new versions.
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm test` | Run tests |
+| `npm run lint` | Lint |
+| `npm run registry:build` | Build static registry JSON |
+| `npm run registry:check` | Validate registry |
 
-### Verification
+---
 
-```bash
-npm run registry:build   # Generate static JSON files
-npm run registry:check   # Validate registry.json and verify output
-npm run test             # Run unit tests
-```
+Full API documentation at [DOCS.md](./DOCS.md).

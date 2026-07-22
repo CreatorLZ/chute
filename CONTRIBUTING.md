@@ -1,37 +1,22 @@
-## Local Setup
+## Setup
 
 ```bash
 npm install
 npm run dev
+# http://localhost:3000
 ```
 
-The dev server starts at `http://localhost:3000`.
-
-## Test Commands
+## Commands
 
 ```bash
-npm run test          # Run vitest
-npm run lint          # Run eslint
-npm run build         # Next.js production build
+npm test              # Run tests
+npm run lint          # Lint
+npm run build         # Production build
+npm run registry:build   # Generate static registry JSON in public/r/
+npm run registry:check   # Validate registry
 ```
 
-## Registry Build
-
-Generate static registry JSON files under `public/r/`:
-
-```bash
-npm run registry:build
-```
-
-Verify the output:
-
-```bash
-npm run registry:check
-```
-
-## Fresh-Install Verification
-
-From a clean clone:
+## Fresh-install verification
 
 ```bash
 npm install
@@ -41,3 +26,5 @@ npm run registry:check
 npm run test
 npm run lint
 ```
+
+See [DOCS.md](./DOCS.md) for full documentation.
