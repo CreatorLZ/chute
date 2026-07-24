@@ -258,16 +258,55 @@ function PresetModal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "Tab") {
+        if (!modalRef.current) return;
+        const focusableElements = modalRef.current.querySelectorAll(
+          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+        
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement?.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement?.focus();
+            e.preventDefault();
+          }
+        }
+      }
     };
+
+    const previouslyFocusedElement = document.activeElement as HTMLElement;
+    
+    if (modalRef.current) {
+      const focusableElements = modalRef.current.querySelectorAll(
+        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length) {
+        (focusableElements[0] as HTMLElement).focus();
+      } else {
+        modalRef.current.focus();
+      }
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedElement?.focus();
+    };
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -277,16 +316,18 @@ function PresetModal({
         onClick={onClose}
       />
       <motion.div
+        ref={modalRef}
+        tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-        className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-2xl"
+        className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-2xl focus:outline-none"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 px-6 py-5 gap-4">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-lg font-bold text-zinc-900 tracking-tight">{title}</h2>
-            <p className="text-sm text-zinc-500 font-medium">{description}</p>
+            <h2 id="modal-title" className="text-lg font-bold text-zinc-900 tracking-tight">{title}</h2>
+            <p id="modal-desc" className="text-sm text-zinc-500 font-medium">{description}</p>
           </div>
           <button
             onClick={onClose}

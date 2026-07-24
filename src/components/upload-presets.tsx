@@ -53,7 +53,12 @@ export const AvatarUpload = forwardRef<UploadFieldHandle, AvatarUploadProps>(
     ref,
   ) {
     const localRef = useRef<UploadFieldHandle>(null);
-    useImperativeHandle(ref, () => localRef.current!, []);
+    useImperativeHandle(ref, () => ({
+      uploadAll: () => localRef.current?.uploadAll() ?? Promise.resolve([]),
+      clear: () => localRef.current?.clear(),
+      addFiles: (files) => localRef.current?.addFiles(files),
+      openFileDialog: () => localRef.current?.openFileDialog(),
+    }), []);
 
     return (
       <UploadField
@@ -104,7 +109,7 @@ export const AvatarUpload = forwardRef<UploadFieldHandle, AvatarUploadProps>(
               previewUrl: entry.previewUrl,
               status: entry.status,
             }}
-            actions={{ ...actions, upload: () => localRef.current?.uploadAll() }}
+            actions={{ ...actions, upload: () => localRef.current?.uploadAll().catch(() => {}) }}
           />
         )}
         renderUploadedFile={(file, actions) => (
@@ -255,7 +260,12 @@ export const AttachmentUpload = forwardRef<
 ) {
   const localRef = useRef<UploadFieldHandle>(null);
 
-  useImperativeHandle(ref, () => localRef.current!, []);
+  useImperativeHandle(ref, () => ({
+    uploadAll: () => localRef.current?.uploadAll() ?? Promise.resolve([]),
+    clear: () => localRef.current?.clear(),
+    addFiles: (files) => localRef.current?.addFiles(files),
+    openFileDialog: () => localRef.current?.openFileDialog(),
+  }), []);
 
   const handleScreenshot = async () => {
     try {
@@ -264,33 +274,44 @@ export const AttachmentUpload = forwardRef<
       });
       const video = document.createElement("video");
       video.srcObject = stream;
-      await new Promise<void>((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play();
-          if ("requestVideoFrameCallback" in video) {
-            (video as any).requestVideoFrameCallback(() => resolve());
-          } else {
-            video.addEventListener("timeupdate", () => resolve(), { once: true });
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error("Video playback timeout")), 5000);
+          video.onloadedmetadata = () => {
+            video.play().catch(reject);
+            const anyVid = video as any;
+            if (typeof anyVid.requestVideoFrameCallback === "function") {
+              anyVid.requestVideoFrameCallback(() => {
+                clearTimeout(timeout);
+                resolve();
+              });
+            } else {
+              video.addEventListener("timeupdate", () => {
+                clearTimeout(timeout);
+                resolve();
+              }, { once: true });
+            }
+          };
+          video.onerror = reject;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d")?.drawImage(video, 0, 0);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File(
+              [blob],
+              `Screenshot-${new Date().toISOString()}.png`,
+              { type: "image/png" },
+            );
+            localRef.current?.addFiles([file]);
           }
-        };
-      });
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d")?.drawImage(video, 0, 0);
-
-      stream.getTracks().forEach((track) => track.stop());
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const file = new File(
-            [blob],
-            `Screenshot-${new Date().toISOString()}.png`,
-            { type: "image/png" },
-          );
-          localRef.current?.addFiles([file]);
-        }
-      }, "image/png");
+        }, "image/png");
+      } finally {
+        stream.getTracks().forEach((track) => track.stop());
+      }
     } catch (err) {
       console.error("Screenshot failed", err);
     }
@@ -364,7 +385,7 @@ export const AttachmentUpload = forwardRef<
         />
         <button
           type="button"
-          onClick={() => localRef.current?.uploadAll()}
+          onClick={() => localRef.current?.uploadAll().catch(() => {})}
           className="flex shrink-0 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 hover:bg-zinc-800 transition-colors h-8 w-8 mb-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowUp className="size-4" strokeWidth={2.5} />
@@ -427,6 +448,7 @@ function InstantFileCard({ file, actions }: any) {
         </span>
       </div>
       <button
+        type="button"
         onClick={actions.remove}
         className="absolute right-1.5 top-1.5 rounded-full bg-background/80 p-0.5 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
       >
