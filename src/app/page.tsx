@@ -354,17 +354,6 @@ function PresetModal({
 function AvatarUploadDemo() {
   const ref = useRef<UploadFieldHandle>(null);
   const [value, setValue] = useState<UploadedFile | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await ref.current?.uploadAll();
-    } catch (e) {
-      console.error(e);
-    }
-    setIsSubmitting(false);
-  };
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -404,17 +393,6 @@ function AvatarUploadDemo() {
 function DocumentUploadDemo() {
   const ref = useRef<UploadFieldHandle>(null);
   const [value, setValue] = useState<UploadedFile[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await ref.current?.uploadAll();
-    } catch (e) {
-      console.error(e);
-    }
-    setIsSubmitting(false);
-  };
 
   return (
     <div className="flex w-full flex-col items-center gap-8">

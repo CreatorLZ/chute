@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { FaviconCycler } from "@/components/favicon-cycler";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -22,7 +23,10 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <FaviconCycler />
+      </body>
     </html>
   );
 }

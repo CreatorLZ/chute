@@ -171,7 +171,6 @@ function AvatarPreview({
           isError && "border-destructive/50",
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -279,14 +278,15 @@ export const AttachmentUpload = forwardRef<
           const timeout = setTimeout(() => reject(new Error("Video playback timeout")), 5000);
           video.onloadedmetadata = () => {
             video.play().catch(reject);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const anyVid = video as any;
-            if (typeof anyVid.requestVideoFrameCallback === "function") {
+            if (typeof anyVid.requestVideoFrameCallback === "function" || navigator.userAgent.includes("Safari")) {
               anyVid.requestVideoFrameCallback(() => {
                 clearTimeout(timeout);
                 resolve();
               });
             } else {
-              video.addEventListener("timeupdate", () => {
+              anyVid.addEventListener("timeupdate", () => {
                 clearTimeout(timeout);
                 resolve();
               }, { once: true });
@@ -396,14 +396,24 @@ export const AttachmentUpload = forwardRef<
 });
 
 
-function InstantFileCard({ file, actions }: any) {
+function InstantFileCard({ file, actions }: {
+  file: {
+    name?: string;
+    url?: string;
+    previewUrl?: string;
+    status?: string;
+    file?: { name?: string; type?: string; size?: number };
+    size?: number;
+  };
+  actions: { remove: () => void };
+}) {
   const isUploading = file.status === "uploading";
   const isError = file.status === "failed";
 
   const isUploaded = "url" in file;
   const isImage = isUploaded
-    ? file.name.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) !== null
-    : file.file?.type.startsWith("image/");
+    ? file.name ? /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(file.name) : false
+    : file.file?.type?.startsWith("image/") ?? false;
 
   const imageUrl = isImage ? file.url || file.previewUrl : null;
 
