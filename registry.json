@@ -47,7 +47,13 @@
       "description": "Drag-and-drop UploadThing upload field with manual queueing, retries, previews, and react-hook-form-compatible metadata values.",
       "categories": ["forms", "upload"],
       "dependencies": ["@uploadthing/react", "uploadthing"],
-      "registryDependencies": ["button", "card", "progress", "attachment", "upload-router"],
+      "registryDependencies": [
+        "button",
+        "card",
+        "progress",
+        "attachment",
+        "upload-router"
+      ],
       "files": [
         {
           "path": "src/components/upload-field.tsx",
@@ -70,7 +76,7 @@
       "name": "upload-presets",
       "type": "registry:component",
       "title": "Upload Presets",
-      "description": "Avatar, attachment, image gallery, and instant upload presets built on Upload Field.",
+      "description": "Avatar and attachment upload presets built on Upload Field.",
       "categories": ["forms", "upload"],
       "dependencies": ["@uploadthing/react", "uploadthing"],
       "registryDependencies": ["upload-field"],

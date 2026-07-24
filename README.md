@@ -12,12 +12,12 @@ Chute fills a narrow gap: UploadThing ships functional upload primitives but lac
 
 ## What ships
 
-| Layer | Description |
-|---|---|
-| `useUploadField()` | Headless queue/upload engine — selection, async validation, progress, per-file retry, object URL lifecycle |
-| `<UploadField />` | Styled default component — drag-and-drop, previews, progress bars, keyboard operability, aria-live announcements |
-| 4 presets | `AvatarUpload`, `AttachmentUpload`, `ImageUpload`, `InstantUpload` — thin wrappers over `UploadField` |
-| File Router | UploadThing `FileRouter` with `avatarUploader`, `imageUploader`, `attachmentUploader` endpoints |
+| Layer              | Description                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `useUploadField()` | Headless queue/upload engine — selection, async validation, progress, per-file retry, object URL lifecycle       |
+| `<UploadField />`  | Styled default component — drag-and-drop, previews, progress bars, keyboard operability, aria-live announcements |
+| 2 presets          | `AvatarUpload`, `AttachmentUpload` — thin wrappers over `UploadField`            |
+| File Router        | UploadThing `FileRouter` with `avatarUploader`, `imageUploader`, `attachmentUploader` endpoints                  |
 
 ## Quick start
 
@@ -39,20 +39,20 @@ Installs the core `UploadField` component, `useUploadField` hook, UploadThing ro
 npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 ```
 
-Also installs the four presets (`AvatarUpload`, `AttachmentUpload`, `ImageUpload`, `InstantUpload`). Requires `upload-field` first.
+Also installs the two presets (`AvatarUpload`, `AttachmentUpload`). Requires `upload-field` first.
 
 ## Usage
 
 ### Manual upload (form submit)
 
 ```tsx
-const uploadRef = useRef<UploadFieldHandle>(null)
+const uploadRef = useRef<UploadFieldHandle>(null);
 
 async function onSubmit() {
-  const ref = uploadRef.current
-  if (!ref) return
-  await ref.uploadAll()
-  const values = getValues()
+  const ref = uploadRef.current;
+  if (!ref) return;
+  await ref.uploadAll();
+  const values = getValues();
 }
 
 // Pass uploadRef to UploadField via its ref prop:
@@ -62,11 +62,7 @@ async function onSubmit() {
 ### Auto upload (chat-style)
 
 ```tsx
-<UploadField
-  endpoint="attachmentUploader"
-  uploadMode="auto"
-  multiple
-/>
+<UploadField endpoint="attachmentUploader" uploadMode="auto" multiple />
 ```
 
 ### Validation
@@ -74,8 +70,7 @@ async function onSubmit() {
 ```tsx
 <UploadField
   validate={(files) =>
-    files.find((f) => f.size > 10 * 1024 * 1024)
-      ? "File too large" : undefined
+    files.find((f) => f.size > 10 * 1024 * 1024) ? "File too large" : undefined
   }
   beforeUpload={async (files) => {
     // Async checks here
@@ -118,14 +113,14 @@ REGISTRY_ORIGIN=https://chuteui.vercel.app npm run registry:build
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm test` | Run tests |
-| `npm run lint` | Lint |
+| Command                  | Purpose                    |
+| ------------------------ | -------------------------- |
+| `npm run dev`            | Development server         |
+| `npm run build`          | Production build           |
+| `npm test`               | Run tests                  |
+| `npm run lint`           | Lint                       |
 | `npm run registry:build` | Build static registry JSON |
-| `npm run registry:check` | Validate registry |
+| `npm run registry:check` | Validate registry          |
 
 ---
 

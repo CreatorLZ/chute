@@ -19,7 +19,7 @@ chute is not:
 
 ## What it ships
 
-Four layers, each independently usable:
+Three layers, each independently usable:
 
 **`useUploadField` hook** (`src/hooks/use-upload-field.ts`)\
 Headless queue-upload engine. Manages file selection, queuing, async validation, progress tracking, per-file retry, and object URL lifecycle. No markup, no styling — usable by any component that needs upload logic.
@@ -30,12 +30,10 @@ Styled default component built on the hook. Drag-and-drop dropzone, click-to-bro
 **Preset components** (`src/components/upload-presets.tsx`)\
 Thin wrappers over `UploadField` for common patterns:
 
-| Component | Default endpoint | Max files | Accepts | Upload mode |
-|---|---|---|---|---|
-| `AvatarUpload` | `avatarUploader` | 1 | `image/*` | manual |
-| `AttachmentUpload` | `attachmentUploader` | 5 | images, PDF, text | manual |
-| `ImageUpload` | `imageUploader` | 10 | `image/*` | manual |
-| `InstantUpload` | `attachmentUploader` | 3 | images, PDF | auto |
+| Component          | Default endpoint     | Max files | Accepts           | Upload mode |
+| ------------------ | -------------------- | --------- | ----------------- | ----------- |
+| `AvatarUpload`     | `avatarUploader`     | 1         | `image/*`         | manual      |
+| `AttachmentUpload` | `attachmentUploader` | 5         | images, PDF, text | manual      |
 
 Presets do not duplicate upload logic. Each is a thin wrapper — easy to read and customize by editing the installed component directly.
 
@@ -46,14 +44,11 @@ UploadThing `FileRouter` defining three endpoints (`avatarUploader`, `imageUploa
 
 ## Demo app
 
-The project includes a working demo app (`src/app/page.tsx`) that renders all four presets on a single page under `react-hook-form` via `Controller`. It demonstrates:
+The project includes a working demo app (`src/app/page.tsx`) that renders both presets as interactive cards with modal detail views. It demonstrates:
 
 - Single-file upload with `AvatarUpload` and `value: UploadedFile | null`
 - Multi-file manual upload with `AttachmentUpload` and `value: UploadedFile[]`
-- Image-only multi-file upload with `ImageUpload` and configurable `maxFiles`
-- Auto-upload mode with `InstantUpload` (files upload on selection, no submit step)
-- Form-level submit that waits for all pending uploads via ref handles
-- Display of submitted metadata after upload (file id, url, name, size)
+- Modal-based preview with live component interaction
 
 **To run the demo:**
 
@@ -73,7 +68,7 @@ The starter file router (`src/app/api/uploadthing/core.ts`) ships with demo-mode
 
 ```ts
 async function getUploadUser(): Promise<{ uploadedBy: string }> {
-  return { uploadedBy: "demo-user" }
+  return { uploadedBy: "demo-user" };
 }
 ```
 
@@ -101,12 +96,12 @@ chute serves as a shadcn registry, allowing installation into any Next.js App Ro
 
 ### Registry items
 
-| Item | Type | Source files | Dependencies |
-|---|---|---|---|
-| `upload-field` | `registry:component` | `upload-field.tsx`, `use-upload-field.ts`, `uploadthing.ts` | shadcn `button`, `card`, `progress` + `attachment` + `upload-router` |
-| `upload-presets` | `registry:component` | `upload-presets.tsx` | `upload-field` |
-| `upload-router` | `registry:file` | `core.ts`, `route.ts` | — |
-| `attachment` | `registry:ui` | `attachment.tsx` | — |
+| Item             | Type                 | Source files                                                | Dependencies                                                         |
+| ---------------- | -------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| `upload-field`   | `registry:component` | `upload-field.tsx`, `use-upload-field.ts`, `uploadthing.ts` | shadcn `button`, `card`, `progress` + `attachment` + `upload-router` |
+| `upload-presets` | `registry:component` | `upload-presets.tsx`                                        | `upload-field`                                                       |
+| `upload-router`  | `registry:file`      | `core.ts`, `route.ts`                                       | —                                                                    |
+| `attachment`     | `registry:ui`        | `attachment.tsx`                                            | —                                                                    |
 
 ### Serving modes
 
@@ -119,6 +114,7 @@ npm run registry:build
 ```
 
 The build process:
+
 1. `shadcn build` reads `registry.json` and generates JSON output with inlined file contents and plain-name dependencies.
 2. A post-build step (`scripts/rewrite-registry-deps.mjs`) replaces local plain-name dependencies with full URLs using the registry origin.
 
@@ -132,10 +128,10 @@ The shadcn CLI resolves `registryDependencies` as follows:
 
 chute handles this as follows:
 
-| Mode | Origin source | Example output |
-|---|---|---|
-| Dynamic route | Request URL origin | `http://localhost:3000/r/attachment.json` |
-| Static build | `REGISTRY_ORIGIN` env var, falls back to `homepage` in `registry.json` | `https://example.com/r/attachment.json` |
+| Mode          | Origin source                                                          | Example output                            |
+| ------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
+| Dynamic route | Request URL origin                                                     | `http://localhost:3000/r/attachment.json` |
+| Static build  | `REGISTRY_ORIGIN` env var, falls back to `homepage` in `registry.json` | `https://example.com/r/attachment.json`   |
 
 For deployable static output, set the origin explicitly:
 
@@ -178,41 +174,43 @@ Core upload component. Propagated props flow through to `useUploadField`.
 
 **Common props (all variants):**
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `endpoint` | keyof OurFileRouter | (required) | UploadThing router endpoint name |
-| `multiple` | boolean | `false` | Allow multiple file selection |
-| `maxFiles` | number | 1 | Maximum files (queued + uploaded) |
-| `accept` | string[] | — | Accepted MIME types / extensions |
-| `uploadMode` | `"manual" \| "auto"` | `"manual"` | Manual queues files for submit; auto uploads on selection |
-| `validate` | (files: File[]) => string \| undefined | — | Synchronous validation; return error message to reject files |
-| `beforeUpload` | (files: File[]) => Promise\<void\> \| void | — | Async pre-upload check; throw or return rejected promise to block |
-| `renderFile` | (entry: FileEntry, actions: UploadFileActions) => ReactNode | — | Custom render for queued/failed file rows |
-| `renderUploadedFile` | (file: UploadedFile, actions: UploadedFileActions) => ReactNode | — | Custom render for uploaded file rows |
-| `classNames` | UploadFieldClassNames | — | Override CSS classes for each section |
+| Prop                 | Type                                                            | Default    | Description                                                       |
+| -------------------- | --------------------------------------------------------------- | ---------- | ----------------------------------------------------------------- |
+| `endpoint`           | keyof OurFileRouter                                             | (required) | UploadThing router endpoint name                                  |
+| `multiple`           | boolean                                                         | `false`    | Allow multiple file selection                                     |
+| `maxFiles`           | number                                                          | 1          | Maximum files (queued + uploaded)                                 |
+| `accept`             | string[]                                                        | —          | Accepted MIME types / extensions                                  |
+| `uploadMode`         | `"manual" \| "auto"`                                            | `"manual"` | Manual queues files for submit; auto uploads on selection         |
+| `validate`           | (files: File[]) => string \| undefined                          | —          | Synchronous validation; return error message to reject files      |
+| `beforeUpload`       | (files: File[]) => Promise\<void\> \| void                      | —          | Async pre-upload check; throw or return rejected promise to block |
+| `renderFile`         | (entry: FileEntry, actions: UploadFileActions) => ReactNode     | —          | Custom render for queued/failed file rows                         |
+| `renderUploadedFile` | (file: UploadedFile, actions: UploadedFileActions) => ReactNode | —          | Custom render for uploaded file rows                              |
+| `classNames`         | UploadFieldClassNames                                           | —          | Override CSS classes for each section                             |
 
 **Single-file variant (`multiple: false` or omitted):**
 
-| Prop | Type | Description |
-|---|---|---|
-| `value` | `UploadedFile \| null` | Currently uploaded file |
+| Prop       | Type                                  | Description                 |
+| ---------- | ------------------------------------- | --------------------------- |
+| `value`    | `UploadedFile \| null`                | Currently uploaded file     |
 | `onChange` | (value: UploadedFile \| null) => void | Called on upload or removal |
 
 **Multi-file variant (`multiple: true`):**
 
-| Prop | Type | Description |
-|---|---|---|
-| `value` | `UploadedFile[]` | Currently uploaded files |
+| Prop       | Type                            | Description                      |
+| ---------- | ------------------------------- | -------------------------------- |
+| `value`    | `UploadedFile[]`                | Currently uploaded files         |
 | `onChange` | (value: UploadedFile[]) => void | Called on each upload or removal |
 
 `UploadedFile` shape: `{ id: string, url: string, name: string, size: number }`
 
 **Ref handle (`UploadFieldHandle`):**
 
-| Method | Returns | Description |
-|---|---|---|
-| `uploadAll()` | `Promise<UploadedFile[]>` | Upload all queued and failed entries; rejects with `UploadFailedError` if any file fails |
-| `clear()` | void | Cancel all queued entries and clear uploaded files |
+| Method        | Returns                   | Description                                                                              |
+| ------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
+| `uploadAll()`             | `Promise<UploadedFile[]>` | Upload all queued and failed entries; rejects with `UploadFailedError` if any file fails |
+| `clear()`                 | void                      | Cancel all queued entries and clear uploaded files                                       |
+| `openFileDialog()`        | void                      | Programmatically open the native file dialog                                             |
+| `addFiles(files: File[])` | void                      | Programmatically add files to the queue                                                  |
 
 ### Presets
 
@@ -222,34 +220,32 @@ Each preset is a thin wrapper over `UploadField` with pre-configured defaults. P
 
 **`AttachmentUpload`:** multi-file, accepts images/PDF/text, up to 5 files. Customizable `endpoint`, `accept`, and `maxFiles`.
 
-**`ImageUpload`:** multi-file, images only, up to 10 files. Customizable `maxFiles`.
 
-**`InstantUpload`:** multi-file, auto-upload mode. Dropzone is compact (no extra padding) for inline use.
 
 ### Exported types
 
 Available from `@/hooks/use-upload-field`:
 
-| Type | Definition |
-|---|---|
-| `UploadedFile` | `{ id: string, url: string, name: string, size: number }` |
-| `UploadStatus` | `"queued" \| "uploading" \| "failed" \| "retrying"` |
-| `UploadMode` | `"manual" \| "auto"` |
-| `UploadError` | `string` |
+| Type                | Definition                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| `UploadedFile`      | `{ id: string, url: string, name: string, size: number }`                                      |
+| `UploadStatus`      | `"queued" \| "uploading" \| "failed" \| "retrying"`                                            |
+| `UploadMode`        | `"manual" \| "auto"`                                                                           |
+| `UploadError`       | `string`                                                                                       |
 | `UploadFailedError` | Error containing `uploadedFiles` and `failedFiles` when `uploadAll()` cannot upload every file |
-| `FileEntry` | Full per-file state including `file`, `status`, `progress`, `previewUrl`, `error` |
+| `FileEntry`         | Full per-file state including `file`, `status`, `progress`, `previewUrl`, `error`              |
 
 Available from `@/components/upload-field`:
 
-| Type | Description |
-|---|---|
-| `UploadFieldHandle` | `{ uploadAll(): Promise<UploadedFile[]>, clear(): void }` |
-| `UploadFileActions` | `{ remove(): void, retry(): void }` |
-| `UploadedFileActions` | `{ open(): void, remove(): void }` |
-| `UploadFieldClassNames` | CSS class overrides per section |
-| `UploadFieldProps` | Union of single and multi-file prop types |
-| `SingleUploadFieldProps` | Props when `multiple` is false or unset |
-| `MultiUploadFieldProps` | Props when `multiple` is true |
+| Type                     | Description                                               |
+| ------------------------ | --------------------------------------------------------- |
+| `UploadFieldHandle`      | `{ uploadAll(): Promise<UploadedFile[]>, clear(): void, openFileDialog(): void, addFiles(files: File[]): void }` |
+| `UploadFileActions`      | `{ remove(): void, retry(): void }`                       |
+| `UploadedFileActions`    | `{ open(): void, remove(): void }`                        |
+| `UploadFieldClassNames`  | CSS class overrides per section                           |
+| `UploadFieldProps`       | Union of single and multi-file prop types                 |
+| `SingleUploadFieldProps` | Props when `multiple` is false or unset                   |
+| `MultiUploadFieldProps`  | Props when `multiple` is true                             |
 
 ---
 
@@ -314,6 +310,7 @@ File select → validateIncomingFiles → addFiles → [manual] uploadAll / [aut
 ### State management
 
 File entry state (`FileEntry[]`) is the hook's single source of truth. It tracks:
+
 - **`id`**: unique identifier (timestamp + counter)
 - **`file`**: the original `File` object
 - **`status`**: lifecycle state (`queued → uploading → [failed | retrying] → removed`)

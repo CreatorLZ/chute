@@ -1,6 +1,6 @@
 # Chute — AI Agent Guide
 
-Chute is a file-upload component library for Next.js App Router + shadcn/ui + UploadThing. It ships a headless upload hook (`useUploadField`), a styled `<UploadField />` component, and four presets (`AvatarUpload`, `AttachmentUpload`, `ImageUpload`, `InstantUpload`). It also serves as a **shadcn registry** — run `npx shadcn add` to install components into any project.
+Chute is a file-upload component library for Next.js App Router + shadcn/ui + UploadThing. It ships a headless upload hook (`useUploadField`), a styled `<UploadField />` component, and two presets (`AvatarUpload`, `AttachmentUpload`). It also serves as a **shadcn registry** — run `npx shadcn add` to install components into any project.
 
 - **Registry (live):** https://chuteui.vercel.app
 - **Repo:** https://github.com/CreatorLZ/chute
@@ -16,7 +16,7 @@ Chute is a file-upload component library for Next.js App Router + shadcn/ui + Up
 # Core — the UploadField component, hook, UploadThing routes, and UI primitives
 npx shadcn add https://chuteui.vercel.app/r/upload-field.json
 
-# Optional — four preset components (AvatarUpload, AttachmentUpload, etc.)
+# Optional — two preset components (AvatarUpload, AttachmentUpload)
 npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 ```
 
@@ -42,7 +42,7 @@ The installed router at `src/app/api/uploadthing/core.ts` ships with **demo auth
 
 ```ts
 async function getUploadUser(): Promise<{ uploadedBy: string }> {
-  return { uploadedBy: "demo-user" }
+  return { uploadedBy: "demo-user" };
 }
 ```
 
@@ -55,16 +55,16 @@ async function getUploadUser(): Promise<{ uploadedBy: string }> {
 ### Manual upload (form submit)
 
 ```tsx
-import { useRef } from "react"
-import { UploadField, type UploadFieldHandle } from "@/components/upload-field"
-import type { UploadedFile } from "@/hooks/use-upload-field"
+import { useRef } from "react";
+import { UploadField, type UploadFieldHandle } from "@/components/upload-field";
+import type { UploadedFile } from "@/hooks/use-upload-field";
 
 function Form() {
-  const ref = useRef<UploadFieldHandle>(null)
+  const ref = useRef<UploadFieldHandle>(null);
 
   async function handleSubmit() {
-    if (!ref.current) return
-    await ref.current.uploadAll()
+    if (!ref.current) return;
+    await ref.current.uploadAll();
     // All files uploaded — values are now in the UploadField's onChange
   }
 
@@ -78,7 +78,7 @@ function Form() {
       />
       <button type="submit">Submit</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -103,11 +103,7 @@ function Form() {
 ### Auto upload (chat-style)
 
 ```tsx
-<UploadField
-  endpoint="attachmentUploader"
-  uploadMode="auto"
-  multiple
-/>
+<UploadField endpoint="attachmentUploader" uploadMode="auto" multiple />
 ```
 
 ### Validation
@@ -115,8 +111,7 @@ function Form() {
 ```tsx
 <UploadField
   validate={(files) =>
-    files.find((f) => f.size > 10 * 1024 * 1024)
-      ? "File too large" : undefined
+    files.find((f) => f.size > 10 * 1024 * 1024) ? "File too large" : undefined
   }
   beforeUpload={async (files) => {
     // Async checks — throw to reject
@@ -128,12 +123,11 @@ function Form() {
 
 ## Presets
 
-| Component | Endpoint | Max | Accepts | Mode |
-|---|---|---|---|---|
-| `AvatarUpload` | `avatarUploader` | 1 | images | manual |
-| `AttachmentUpload` | `attachmentUploader` | 5 | images, PDF, text | manual |
-| `ImageUpload` | `imageUploader` | 10 | images | manual |
-| `InstantUpload` | `attachmentUploader` | 3 | images, PDF | auto |
+| Component          | Endpoint             | Max | Accepts           | Mode   |
+| ------------------ | -------------------- | --- | ----------------- | ------ |
+| `AvatarUpload`     | `avatarUploader`     | 1   | images            | manual |
+| `AttachmentUpload` | `attachmentUploader` | 5   | images, PDF, text | manual |
+
 
 Import from `@/components/upload-presets`. Each accepts the same props as `UploadField` with sensible defaults.
 
@@ -143,20 +137,20 @@ Import from `@/components/upload-presets`. Each accepts the same props as `Uploa
 
 ### `UploadField` props
 
-| Prop | Type | Default |
-|---|---|---|
-| `endpoint` | `keyof OurFileRouter` | required |
-| `multiple` | `boolean` | `false` |
-| `maxFiles` | `number` | `1` |
-| `accept` | `string[]` | — |
-| `uploadMode` | `"manual" \| "auto"` | `"manual"` |
-| `validate` | `(files: File[]) => string \| undefined` | — |
-| `beforeUpload` | `(files: File[]) => Promise<void> \| void` | — |
-| `renderFile` | `(entry, actions) => ReactNode` | — |
-| `renderUploadedFile` | `(file, actions) => ReactNode` | — |
-| `classNames` | `UploadFieldClassNames` | — |
-| `value` | `UploadedFile \| null` (single) or `UploadedFile[]` (multi) | — |
-| `onChange` | `(value) => void` | — |
+| Prop                 | Type                                                        | Default    |
+| -------------------- | ----------------------------------------------------------- | ---------- |
+| `endpoint`           | `keyof OurFileRouter`                                       | required   |
+| `multiple`           | `boolean`                                                   | `false`    |
+| `maxFiles`           | `number`                                                    | `1`        |
+| `accept`             | `string[]`                                                  | —          |
+| `uploadMode`         | `"manual" \| "auto"`                                        | `"manual"` |
+| `validate`           | `(files: File[]) => string \| undefined`                    | —          |
+| `beforeUpload`       | `(files: File[]) => Promise<void> \| void`                  | —          |
+| `renderFile`         | `(entry, actions) => ReactNode`                             | —          |
+| `renderUploadedFile` | `(file, actions) => ReactNode`                              | —          |
+| `classNames`         | `UploadFieldClassNames`                                     | —          |
+| `value`              | `UploadedFile \| null` (single) or `UploadedFile[]` (multi) | —          |
+| `onChange`           | `(value) => void`                                           | —          |
 
 ### Ref handle (`UploadFieldHandle`)
 

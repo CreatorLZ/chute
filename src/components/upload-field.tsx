@@ -7,8 +7,10 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  Fragment,
   type ReactNode,
 } from "react"
+import { UploadCloud, FileText, CheckCircle2, AlertCircle } from "lucide-react"
 import {
   Attachment,
   AttachmentAction,
@@ -50,6 +52,19 @@ type BaseUploadFieldProps = {
   uploadLabel?: string
   browseLabel?: string
   queuedLabel?: string
+  dropzoneVariant?: "default" | "compact"
+  /** Hide the drag-zone Card once at least one file has been queued or successfully uploaded */
+  hideDropzoneOnPresence?: boolean
+  /** Replace the entire CardContent inside the drop zone with custom JSX */
+  renderDropzoneContent?: (isDragOver: boolean) => ReactNode
+  /** Hide the "Uploaded files" section label */
+  hideUploadedLabel?: boolean
+  /** Hide the queue section label */
+  hideQueueLabel?: boolean
+  /** Completely hide the dropzone UI, useful for headless triggers */
+  hideDropzone?: boolean
+  /** Hide the global action buttons (Upload / Clear) at the bottom of the field */
+  hideGlobalActions?: boolean
   validate?: (files: File[]) => string | undefined
   beforeUpload?: (files: File[]) => Promise<void> | void
   renderFile?: (entry: FileEntry, actions: UploadFileActions) => ReactNode
@@ -74,6 +89,8 @@ export type UploadedFileActions = {
 export type UploadFieldHandle = {
   uploadAll: () => Promise<UploadedFile[]>
   clear: () => void
+  openFileDialog: () => void
+  addFiles: (files: File[]) => void
 }
 
 export type SingleUploadFieldProps = BaseUploadFieldProps & {
@@ -100,6 +117,13 @@ export const UploadField = forwardRef<UploadFieldHandle, UploadFieldProps>(funct
   uploadLabel = "Upload",
   browseLabel = "Drag and drop files here, or click to browse",
   queuedLabel = "Ready to upload",
+  dropzoneVariant = "default",
+  hideDropzoneOnPresence = false,
+  renderDropzoneContent,
+  hideUploadedLabel = false,
+  hideQueueLabel = false,
+  hideDropzone = false,
+  hideGlobalActions = false,
   value = [],
   onChange,
   validate,
@@ -227,89 +251,110 @@ export const UploadField = forwardRef<UploadFieldHandle, UploadFieldProps>(funct
   useImperativeHandle(ref, () => ({
     uploadAll,
     clear: handleClear,
-  }), [handleClear, uploadAll])
+    openFileDialog: () => inputRef.current?.click(),
+    addFiles: (files: File[]) => handleFiles(files),
+  }), [handleClear, uploadAll, handleFiles])
+
+  const showDropzone = !hideDropzone && !(hideDropzoneOnPresence && (files.length > 0 || fileEntries.length > 0))
 
   return (
     <div ref={containerRef} className={cn("space-y-3", classNames?.root)}>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {statusMessage}
       </p>
-      <Card
-        className={cn(
-          "relative cursor-pointer border-dashed transition-colors",
-          isDragOver && "border-primary ring-2 ring-primary/20",
-          uploadError && "border-destructive",
-          classNames?.dropzone
-        )}
-        onDrop={handleDrop}
-        onDragOver={(event) => {
-          event.preventDefault()
-          setIsDragOver(true)
-        }}
-        onDragLeave={(event) => {
-          event.preventDefault()
-          setIsDragOver(false)
-        }}
-        onKeyDown={handleKeyDown}
-        onClick={() => inputRef.current?.click()}
-        tabIndex={0}
-        role="button"
-        aria-label="Choose files to upload"
-      >
-        <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
-          <UploadIcon />
-          <p className="text-sm text-muted-foreground">
-            {isDragOver ? "Drop files here" : browseLabel}
-          </p>
-          {accept && (
-            <p className="text-xs text-muted-foreground/60">
-              Accepted: {accept.join(", ")}
-            </p>
+
+      {showDropzone && (
+        <Card
+          variant={dropzoneVariant}
+          className={cn(
+            "relative cursor-pointer border-dashed transition-all duration-200",
+            isDragOver && "border-foreground/60 ring-2 ring-foreground/15 bg-muted",
+            uploadError && "border-destructive/60 ring-2 ring-destructive/10",
+            classNames?.dropzone
           )}
-        </CardContent>
-        <input
-          ref={inputRef}
-          type="file"
-          className="sr-only"
-          accept={accept?.join(",")}
-          multiple={multiple}
-          onChange={(event) => {
-            if (event.target.files?.length) handleFiles(event.target.files)
+          onDrop={handleDrop}
+          onDragOver={(event) => {
+            event.preventDefault()
+            setIsDragOver(true)
           }}
-          tabIndex={-1}
-        />
-      </Card>
+          onDragLeave={(event) => {
+            event.preventDefault()
+            setIsDragOver(false)
+          }}
+          onKeyDown={handleKeyDown}
+          onClick={() => inputRef.current?.click()}
+          tabIndex={0}
+          role="button"
+          aria-label="Choose files to upload"
+        >
+          {renderDropzoneContent ? (
+            renderDropzoneContent(isDragOver)
+          ) : dropzoneVariant === "compact" ? (
+            <CardContent className="flex w-full items-center justify-center gap-2.5 py-3.5 px-5">
+              <UploadIcon isDragOver={isDragOver} compact />
+              <span className="text-sm font-medium text-foreground/80">
+                {isDragOver ? "Release to add" : browseLabel}
+              </span>
+              {accept && (
+                <span className="text-xs text-muted-foreground/50 hidden sm:inline">
+                  ({accept.join(", ")})
+                </span>
+              )}
+            </CardContent>
+          ) : (
+            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+              <UploadIcon isDragOver={isDragOver} />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground/80">
+                  {isDragOver ? "Release to add files" : browseLabel}
+                </p>
+                {accept && (
+                  <p className="text-xs text-muted-foreground/50">
+                    {accept.join(" · ")}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        className="sr-only"
+        accept={accept?.join(",")}
+        multiple={multiple}
+        onChange={(event) => {
+          if (event.target.files?.length) handleFiles(event.target.files)
+        }}
+        tabIndex={-1}
+      />
 
       {uploadError && (
         <p className="text-sm text-destructive">{uploadError}</p>
       )}
 
-      {files.length > 0 && (
-        <AttachmentGroup className={classNames?.uploaded}>
-          <p className="text-sm font-medium">Uploaded files</p>
+      {(files.length > 0 || fileEntries.length > 0) && hideUploadedLabel && hideQueueLabel ? (
+        <AttachmentGroup className={cn(classNames?.uploaded, classNames?.queue)}>
           {files.map((file, index) => (
-            <UploadedFileSlot
-              key={file.id}
-              file={file}
-              index={index}
-              renderUploadedFile={renderUploadedFile}
-              onRemove={handleUploadedFileRemove}
-            />
+            renderUploadedFile ? (
+              <Fragment key={file.id}>
+                {renderUploadedFile(file, {
+                  open: () => window.open(file.url, "_blank", "noopener,noreferrer"),
+                  remove: () => handleUploadedFileRemove(index),
+                })}
+              </Fragment>
+            ) : (
+              <UploadedFileSlot
+                key={file.id}
+                file={file}
+                index={index}
+                renderUploadedFile={renderUploadedFile}
+                onRemove={handleUploadedFileRemove}
+              />
+            )
           ))}
-        </AttachmentGroup>
-      )}
-
-      {fileEntries.length > 0 && (
-        <AttachmentGroup className={classNames?.queue}>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium">
-              {uploadMode === "manual" ? queuedLabel : "Uploads"}
-            </p>
-            <span className="text-xs text-muted-foreground">
-              {fileEntries.length} file{fileEntries.length === 1 ? "" : "s"}
-            </span>
-          </div>
-
           {fileEntries.map((entry) => {
             const actions = {
               remove: () => removeFile(entry.id),
@@ -317,7 +362,9 @@ export const UploadField = forwardRef<UploadFieldHandle, UploadFieldProps>(funct
             }
 
             return renderFile ? (
-              <div key={entry.id}>{renderFile(entry, actions)}</div>
+              <Fragment key={entry.id}>
+                {renderFile(entry, actions)}
+              </Fragment>
             ) : (
               <QueuedFileRow
                 key={entry.id}
@@ -328,9 +375,70 @@ export const UploadField = forwardRef<UploadFieldHandle, UploadFieldProps>(funct
             )
           })}
         </AttachmentGroup>
+      ) : (
+        <>
+          {files.length > 0 && (
+            <AttachmentGroup className={classNames?.uploaded}>
+              {!hideUploadedLabel && <p className="text-sm font-medium">Uploaded files</p>}
+              {files.map((file, index) => (
+                renderUploadedFile ? (
+                  <Fragment key={file.id}>
+                    {renderUploadedFile(file, {
+                      open: () => window.open(file.url, "_blank", "noopener,noreferrer"),
+                      remove: () => handleUploadedFileRemove(index),
+                    })}
+                  </Fragment>
+                ) : (
+                  <UploadedFileSlot
+                    key={file.id}
+                    file={file}
+                    index={index}
+                    renderUploadedFile={renderUploadedFile}
+                    onRemove={handleUploadedFileRemove}
+                  />
+                )
+              ))}
+            </AttachmentGroup>
+          )}
+
+          {fileEntries.length > 0 && (
+            <AttachmentGroup className={classNames?.queue}>
+              {!hideQueueLabel && (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium">
+                    {uploadMode === "manual" ? queuedLabel : "Uploads"}
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    {fileEntries.length} file{fileEntries.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+              )}
+
+              {fileEntries.map((entry) => {
+                const actions = {
+                  remove: () => removeFile(entry.id),
+                  retry: () => retryFile(entry.id),
+                }
+
+                return renderFile ? (
+                  <Fragment key={entry.id}>
+                    {renderFile(entry, actions)}
+                  </Fragment>
+                ) : (
+                  <QueuedFileRow
+                    key={entry.id}
+                    entry={entry}
+                    actions={actions}
+                    className={classNames?.file}
+                  />
+                )
+              })}
+            </AttachmentGroup>
+          )}
+        </>
       )}
 
-      {(fileEntries.length > 0 || files.length > 0) && (
+      {!hideGlobalActions && (fileEntries.length > 0 || files.length > 0) && (
         <div className={cn("flex flex-wrap gap-2", classNames?.actions)}>
           {uploadMode === "manual" && fileEntries.length > 0 && (
             <Button
@@ -571,41 +679,40 @@ function getStatusMessage(entries: FileEntry[], error: string | null) {
   return "No files selected."
 }
 
-function UploadIcon() {
-  return (
-    <svg
-      className="size-8 text-muted-foreground"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
+function UploadIcon({ isDragOver, compact }: { isDragOver?: boolean; compact?: boolean }) {
+  if (compact) {
+    return (
+      <UploadCloud
+        className={cn(
+          "size-4 shrink-0 transition-colors duration-200",
+          isDragOver ? "text-foreground" : "text-muted-foreground/60"
+        )}
         strokeWidth={1.5}
-        d="M12 16V4m0 0L8 8m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
       />
-    </svg>
+    )
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-muted/30 transition-all duration-200",
+        isDragOver && "border-foreground/40 bg-muted text-foreground scale-110"
+      )}
+    >
+      <UploadCloud
+        className={cn(
+          "size-5 transition-colors duration-200",
+          isDragOver ? "text-foreground" : "text-muted-foreground/60 group-hover/card:text-muted-foreground"
+        )}
+        strokeWidth={1.5}
+      />
+    </div>
   )
 }
 
 function FileIcon() {
   return (
-    <svg
-      className="size-4 shrink-0 text-muted-foreground"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-      />
-    </svg>
+    <FileText className="size-4 shrink-0 text-muted-foreground/60" strokeWidth={1.5} />
   )
 }
 
