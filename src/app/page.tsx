@@ -67,7 +67,7 @@ export default function Home() {
           transition={{ ...TRANSITION, delay: 0.1 }}
           className="max-w-[500px] text-lg text-muted-foreground leading-relaxed font-medium"
         >
-          File upload components for Next.js. Powered by UploadThing. Two
+          File upload components for Next.js. Powered by <a href="https://uploadthing.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 decoration-zinc-300 hover:decoration-zinc-500">UploadThing</a>. Two
           presets, one engine, drop in and ship.
         </motion.p>
 
@@ -133,7 +133,7 @@ export default function Home() {
         >
           {[
             "2 Presets",
-            "UploadThing Powered",
+            "Powered by UploadThing",
             "TypeScript",
             "React Hook Form",
           ].map((stat) => (
@@ -214,6 +214,31 @@ export default function Home() {
           </PresetModal>
         )}
       </AnimatePresence>
+
+      {/* Footer disclaimer */}
+      <footer className="mx-auto mt-32 max-w-2xl text-center">
+        <div className="rounded-2xl border border-zinc-200/60 bg-zinc-50/50 px-6 py-8 sm:px-10">
+          <h3 className="text-sm font-semibold tracking-tight text-zinc-900">
+            What is chute, actually?
+          </h3>
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+            chute is not a <a href="https://uploadthing.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 decoration-zinc-300 hover:decoration-zinc-500">UploadThing</a> competitor — it's the opposite. <a href="https://uploadthing.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 decoration-zinc-300 hover:decoration-zinc-500">UploadThing</a>
+            handles the hard backend work (file storage, security, CDN delivery).
+            chute just wraps their upload primitives into clean shadcn/ui components
+            so you don't have to build the drag-and-drop, progress bars, previews,
+            and form integration yourself every time.
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-zinc-600">
+            I built it because I kept copy-pasting the same upload logic between projects.
+            Every app needed file uploads. Every app had the same patterns — queue files,
+            show previews, track progress, wire it to a form. So I pulled it out into
+            a reusable package. Two presets, one hook, no boilerplate.
+          </p>
+          <p className="mt-4 text-xs text-zinc-400">
+            MIT · Open source · Not affiliated with <a href="https://uploadthing.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 decoration-zinc-300 hover:decoration-zinc-500">UploadThing</a>
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }

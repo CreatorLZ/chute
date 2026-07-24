@@ -1,23 +1,24 @@
 # Chute
 
-UploadThing-powered file upload components for Next.js App Router and shadcn/ui projects.
+[UploadThing](https://uploadthing.com)-powered file upload components for Next.js App Router and shadcn/ui projects.
 
 ```bash
 npx shadcn add https://chuteui.vercel.app/r/upload-field.json
+npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 ```
 
 ## What it is
 
-Chute fills a narrow gap: UploadThing ships functional upload primitives but lacks styled, form-integrated UI. Chute is the intersection — upload components designed for projects that use both shadcn/ui and UploadThing.
+Chute fills a narrow gap: [UploadThing](https://uploadthing.com) ships functional upload primitives but lacks styled, form-integrated UI. Chute is the intersection — upload components designed for projects that use both shadcn/ui and [UploadThing](https://uploadthing.com).
 
 ## What ships
 
-| Layer              | Description                                                                                                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `useUploadField()` | Headless queue/upload engine — selection, async validation, progress, per-file retry, object URL lifecycle       |
-| `<UploadField />`  | Styled default component — drag-and-drop, previews, progress bars, keyboard operability, aria-live announcements |
-| 2 presets          | `AvatarUpload`, `AttachmentUpload` — thin wrappers over `UploadField`            |
-| File Router        | UploadThing `FileRouter` with `avatarUploader`, `imageUploader`, `attachmentUploader` endpoints                  |
+| Layer                 | Description                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `useUploadField()`    | Headless queue/upload engine — selection, async validation, progress, per-file retry, object URL lifecycle       |
+| `<UploadField />`     | Styled default component — drag-and-drop, previews, progress bars, keyboard operability, aria-live announcements |
+| 2 presets             | `AvatarUpload`, `AttachmentUpload` — thin wrappers over `UploadField`                                            |
+| File Router           | [UploadThing](https://uploadthing.com) `FileRouter` with `avatarUploader`, `imageUploader`, `attachmentUploader` endpoints                  |
 
 ## Quick start
 
@@ -33,7 +34,7 @@ npm run dev
 npx shadcn add https://chuteui.vercel.app/r/upload-field.json
 ```
 
-Installs the core `UploadField` component, `useUploadField` hook, UploadThing route, and UI primitives (`button`, `card`, `progress`, `attachment`). Writes `UPLOADTHING_TOKEN` to `.env.local`.
+Installs the core `UploadField` component, `useUploadField` hook, [UploadThing](https://uploadthing.com) route, and UI primitives (`button`, `card`, `progress`, `attachment`). Writes `UPLOADTHING_TOKEN` to `.env.local`.
 
 ```bash
 npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
@@ -41,7 +42,63 @@ npx shadcn add https://chuteui.vercel.app/r/upload-presets.json
 
 Also installs the two presets (`AvatarUpload`, `AttachmentUpload`). Requires `upload-field` first.
 
-## Usage
+## Presets
+
+### AvatarUpload
+
+Single image upload with a centered circular dropzone, drag-and-drop, and in-preview upload button.
+
+```tsx
+import { useRef, useState } from "react";
+import { AvatarUpload } from "@/components/upload-presets";
+import type { UploadFieldHandle } from "@/components/upload-field";
+import type { UploadedFile } from "@/hooks/use-upload-field";
+
+function AvatarField() {
+  const ref = useRef<UploadFieldHandle>(null);
+  const [value, setValue] = useState<UploadedFile | null>(null);
+
+  const handleSave = () => ref.current?.uploadAll();
+
+  return (
+    <AvatarUpload
+      ref={ref}
+      value={value}
+      onChange={setValue}
+      endpoint="avatarUploader"
+    />
+  );
+}
+```
+
+### AttachmentUpload
+
+Multi-file chat-style uploader with a dropdown file picker, screenshot capture, and manual upload button. Accepts images, PDF, and text files.
+
+```tsx
+import { useRef, useState } from "react";
+import { AttachmentUpload } from "@/components/upload-presets";
+import type { UploadFieldHandle } from "@/components/upload-field";
+import type { UploadedFile } from "@/hooks/use-upload-field";
+
+function UploadField() {
+  const ref = useRef<UploadFieldHandle>(null);
+  const [value, setValue] = useState<UploadedFile[]>([]);
+
+  const handleSend = () => ref.current?.uploadAll();
+
+  return (
+    <AttachmentUpload
+      ref={ref}
+      value={value}
+      onChange={setValue}
+      endpoint="attachmentUploader"
+    />
+  );
+}
+```
+
+## Base UploadField usage
 
 ### Manual upload (form submit)
 
@@ -55,7 +112,6 @@ async function onSubmit() {
   const values = getValues();
 }
 
-// Pass uploadRef to UploadField via its ref prop:
 // <UploadField ref={uploadRef} endpoint="attachmentUploader" multiple />
 ```
 
@@ -63,6 +119,23 @@ async function onSubmit() {
 
 ```tsx
 <UploadField endpoint="attachmentUploader" uploadMode="auto" multiple />
+```
+
+### With react-hook-form
+
+```tsx
+<Controller
+  name="attachments"
+  control={control}
+  render={({ field }) => (
+    <UploadField
+      multiple
+      endpoint="attachmentUploader"
+      value={field.value}
+      onChange={field.onChange}
+    />
+  )}
+/>
 ```
 
 ### Validation
@@ -78,25 +151,21 @@ async function onSubmit() {
 />
 ```
 
-### Custom file row
-
-```tsx
-<UploadField
-  renderFile={(entry, actions) => <YourCustomRow />}
-  renderUploadedFile={(file, actions) => <YourCustomPreview />}
-/>
-```
-
 ## Auth
 
-The demo router allows all uploads (returns `{ uploadedBy: "demo-user" }`). **Replace `getUploadUser()` in `src/app/api/uploadthing/core.ts` with your own auth before deploying to production.** You'll also need an UploadThing token:
+[UploadThing](https://uploadthing.com) requires a token. Getting one takes 30 seconds — no credit card needed:
 
-1. Get a token at [uploadthing.com/dashboard](https://uploadthing.com/dashboard)
-2. Set it in `.env.local`:
+1. Sign in at [uploadthing.com/dashboard](https://uploadthing.com/dashboard)
+2. Create an app and copy the token (starts with `sk_live_`)
+3. Create `.env.local` in your project root:
 
 ```env
 UPLOADTHING_TOKEN=sk_live_...
 ```
+
+The demo router allows all uploads (returns `{ uploadedBy: "demo-user" }`). **Replace `getUploadUser()` in `src/app/api/uploadthing/core.ts` with your own auth before deploying to production.**
+
+> If you're using an AI agent, just tell it: *"I need an [UploadThing](https://uploadthing.com) token"* — the agent will walk you through it. It's one file edit and one `.env` line.
 
 ## Registry
 

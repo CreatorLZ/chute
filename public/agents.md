@@ -1,6 +1,6 @@
 # Chute — AI Agent Guide
 
-Chute is a file-upload component library for Next.js App Router + shadcn/ui + UploadThing. It ships a headless upload hook (`useUploadField`), a styled `<UploadField />` component, and two presets (`AvatarUpload`, `AttachmentUpload`). It also serves as a **shadcn registry** — run `npx shadcn add` to install components into any project.
+Chute is a file-upload component library for Next.js App Router + shadcn/ui + [UploadThing](https://uploadthing.com). It ships a headless upload hook (`useUploadField`), a styled `<UploadField />` component, and two presets (`AvatarUpload`, `AttachmentUpload`). It also serves as a **shadcn registry** — run `npx shadcn add` to install components into any project.
 
 - **Registry (live):** https://chuteui.vercel.app
 - **Repo:** https://github.com/CreatorLZ/chute
@@ -13,7 +13,7 @@ Chute is a file-upload component library for Next.js App Router + shadcn/ui + Up
 **Prerequisites:** Next.js App Router project with shadcn/ui initialized.
 
 ```sh
-# Core — the UploadField component, hook, UploadThing routes, and UI primitives
+# Core — the UploadField component, hook, [UploadThing](https://uploadthing.com) routes, and UI primitives
 npx shadcn add https://chuteui.vercel.app/r/upload-field.json
 
 # Optional — two preset components (AvatarUpload, AttachmentUpload)
@@ -24,15 +24,21 @@ This copies source files into the consumer project. Future updates require re-ru
 
 ---
 
-## UploadThing token
+## [UploadThing](https://uploadthing.com) token
 
-Get a token at https://uploadthing.com/dashboard and set it in `.env.local`:
+**Required. 30 seconds. Free.**
+
+1. Sign in at [uploadthing.com/dashboard](https://uploadthing.com/dashboard)
+2. Create an app, copy the token
+3. Paste it into `.env.local`:
 
 ```
 UPLOADTHING_TOKEN=sk_live_...
 ```
 
-The token identifies the app to UploadThing. It is NOT user authentication.
+That's it. The token identifies the app to [UploadThing](https://uploadthing.com) — it is NOT user authentication. The `npx shadcn add` commands will also prompt for this token automatically during install.
+
+> **AI agents:** This is the one manual step the developer needs. Tell them: *"Go to uploadthing.com/dashboard, create an app, and paste the token into `.env.local`."* Then continue with setup.
 
 ---
 
@@ -131,6 +137,34 @@ function Form() {
 
 Import from `@/components/upload-presets`. Each accepts the same props as `UploadField` with sensible defaults.
 
+**`AvatarUpload`** — single image with a centered circular dropzone and in-preview upload button:
+```tsx
+import { useRef, useState } from "react"
+import { AvatarUpload } from "@/components/upload-presets"
+import type { UploadFieldHandle } from "@/components/upload-field"
+import type { UploadedFile } from "@/hooks/use-upload-field"
+
+function AvatarField() {
+  const ref = useRef<UploadFieldHandle>(null)
+  const [value, setValue] = useState<UploadedFile | null>(null)
+  return <AvatarUpload ref={ref} value={value} onChange={setValue} />
+}
+```
+
+**`AttachmentUpload`** — multi-file chat-style uploader with dropdown file picker, screenshot capture, and textarea. Files queue for manual upload via the send button:
+```tsx
+import { useRef, useState } from "react"
+import { AttachmentUpload } from "@/components/upload-presets"
+import type { UploadFieldHandle } from "@/components/upload-field"
+import type { UploadedFile } from "@/hooks/use-upload-field"
+
+function ChatUpload() {
+  const ref = useRef<UploadFieldHandle>(null)
+  const [value, setValue] = useState<UploadedFile[]>([])
+  return <AttachmentUpload ref={ref} value={value} onChange={setValue} />
+}
+```
+
 ---
 
 ## API reference
@@ -157,6 +191,8 @@ Import from `@/components/upload-presets`. Each accepts the same props as `Uploa
 ```ts
 uploadAll(): Promise<UploadedFile[]>  // upload queued + failed files
 clear(): void                          // clear all
+openFileDialog(): void                 // open native file picker
+addFiles(files: File[]): void          // programmatically add files
 ```
 
 ### Key types
@@ -182,5 +218,5 @@ Import from `@/components/upload-field`:
 1. **Demo auth is not for production.** Replace `getUploadUser()` in `src/app/api/uploadthing/core.ts` with real auth. The file has a visible banner warning.
 2. **One-time copy.** `npx shadcn add` copies files — they don't auto-update.
 3. **Next.js App Router only.** Pages Router is not supported.
-4. **UploadThing only.** No multi-provider abstraction.
-5. **The UploadThing token is not auth.** It identifies the app, not the user. Never use it as an authorization check.
+4. **[UploadThing](https://uploadthing.com) only.** No multi-provider abstraction.
+5. **The [UploadThing](https://uploadthing.com) token is not auth.** It identifies the app, not the user. Never use it as an authorization check.

@@ -1,18 +1,18 @@
 # chute
 
-UploadThing-backed file upload components for Next.js App Router + shadcn/ui projects.
+[UploadThing](https://uploadthing.com)-backed file upload components for Next.js App Router + shadcn/ui projects.
 
 ---
 
 ## What chute is
 
-chute fills a narrow, real gap: UploadThing ships functional upload primitives (`generateUploadButton`, `generateUploadDropzone`) that work but lack styled, form-integrated UI. shadcn-compatible upload components already exist (Shadcnblocks, shadcn-extension) but none bundle real UploadThing wiring. chute is the intersection: upload components designed for projects that use both shadcn/ui and UploadThing.
+chute fills a narrow, real gap: [UploadThing](https://uploadthing.com) ships functional upload primitives (`generateUploadButton`, `generateUploadDropzone`) that work but lack styled, form-integrated UI. shadcn-compatible upload components already exist (Shadcnblocks, shadcn-extension) but none bundle real [UploadThing](https://uploadthing.com) wiring. chute is the intersection: upload components designed for projects that use both shadcn/ui and [UploadThing](https://uploadthing.com).
 
 chute is not:
 
 - A hosted SaaS product
 - A no-code tool
-- A replacement for or reseller of UploadThing
+- A replacement for or reseller of [UploadThing](https://uploadthing.com)
 - A multi-provider upload abstraction layer
 
 ---
@@ -38,7 +38,7 @@ Thin wrappers over `UploadField` for common patterns:
 Presets do not duplicate upload logic. Each is a thin wrapper — easy to read and customize by editing the installed component directly.
 
 **File Router** (`src/app/api/uploadthing/core.ts` and `route.ts`)\
-UploadThing `FileRouter` defining three endpoints (`avatarUploader`, `imageUploader`, `attachmentUploader`) with per-type size and count limits. Ships with demo-mode auth (allows all uploads) and a production auth example in comments.
+[UploadThing](https://uploadthing.com) `FileRouter` defining three endpoints (`avatarUploader`, `imageUploader`, `attachmentUploader`) with per-type size and count limits. Ships with demo-mode auth (allows all uploads) and a production auth example in comments.
 
 ---
 
@@ -64,6 +64,20 @@ Uploads work out of the box with demo auth. See [Auth integration](#auth-integra
 
 ## Auth integration
 
+**You need an [UploadThing](https://uploadthing.com) token.** It's free and takes 30 seconds:
+
+1. Go to [uploadthing.com/dashboard](https://uploadthing.com/dashboard)
+2. Create an app, copy the token (starts with `sk_live_`)
+3. Add it to `.env.local`:
+
+```
+UPLOADTHING_TOKEN=sk_live_...
+```
+
+The `npx shadcn add` commands will prompt you for this token automatically during install — you can paste it right then. Or create `.env.local` yourself. `.env.example` documents the format without exposing a credential.
+
+> **For AI agents:** Tell the developer *"Go to uploadthing.com/dashboard, create an app, and paste the token into `.env.local`"*. That's the full setup.
+
 The starter file router (`src/app/api/uploadthing/core.ts`) ships with demo-mode auth that allows all uploads:
 
 ```ts
@@ -74,19 +88,7 @@ async function getUploadUser(): Promise<{ uploadedBy: string }> {
 
 **This is not secure for production.** You must replace `getUploadUser()` with your application's real server-side auth lookup. A production example is included as a comment in the same file. The return value (`uploadedBy`) is available in `onUploadComplete` metadata and can be used for audit trails.
 
-You also need an UploadThing token to authenticate your app with UploadThing (this is separate from user auth):
-
-1. Sign in at https://uploadthing.com/dashboard
-2. Create an app and copy its API token
-3. Create `.env.local` at the project root:
-
-```
-UPLOADTHING_TOKEN=sk_live_...
-```
-
-4. Restart the dev server.
-
-`.env.example` documents the token format without exposing a credential. Note that an UploadThing token identifies your application to UploadThing — it is not user authentication and must never be used as an authorization check.
+Note: [UploadThing](https://uploadthing.com) token identifies your application to [UploadThing](https://uploadthing.com) — it is not user authentication and must never be used as an authorization check.
 
 ---
 
@@ -150,7 +152,7 @@ npx shadcn add http://localhost:3000/r/upload-field.json
 npx shadcn add http://localhost:3000/r/upload-presets.json
 ```
 
-This installs all source files into the consumer's `src/` directory, resolves dependency chains (including the UploadThing route files and the attachment primitives), and writes `UPLOADTHING_TOKEN` to `.env.local` as a placeholder.
+This installs all source files into the consumer's `src/` directory, resolves dependency chains (including the [UploadThing](https://uploadthing.com) route files and the attachment primitives), and writes `UPLOADTHING_TOKEN` to `.env.local` as a placeholder.
 
 **One-time-copy limitation:** Once installed via `npx shadcn add`, the files are copied into the consumer project. Future fixes or updates to chute will not propagate automatically — the consumer must re-run the install command to pick up changes. This is a property of the shadcn registry model, not a chute-specific limitation.
 
@@ -176,7 +178,7 @@ Core upload component. Propagated props flow through to `useUploadField`.
 
 | Prop                 | Type                                                            | Default    | Description                                                       |
 | -------------------- | --------------------------------------------------------------- | ---------- | ----------------------------------------------------------------- |
-| `endpoint`           | keyof OurFileRouter                                             | (required) | UploadThing router endpoint name                                  |
+| `endpoint`           | keyof OurFileRouter                                             | (required) | [UploadThing](https://uploadthing.com) router endpoint name                                  |
 | `multiple`           | boolean                                                         | `false`    | Allow multiple file selection                                     |
 | `maxFiles`           | number                                                          | 1          | Maximum files (queued + uploaded)                                 |
 | `accept`             | string[]                                                        | —          | Accepted MIME types / extensions                                  |
@@ -216,9 +218,9 @@ Core upload component. Propagated props flow through to `useUploadField`.
 
 Each preset is a thin wrapper over `UploadField` with pre-configured defaults. Props not listed below are passed through to `UploadField`.
 
-**`AvatarUpload`:** single image, max 4MB. Additional props: `className` (sets max width on dropzone).
+**`AvatarUpload`:** single image, `maxFiles={1}`, accepts `image/*`. Renders a centered circular dropzone with drag-and-drop. On file selection it shows a circular preview with a hover-to-reveal delete button. A "Save Photo" button triggers manual upload via `uploadAll()`. Customizable `endpoint`, `className`, and `classNames`.
 
-**`AttachmentUpload`:** multi-file, accepts images/PDF/text, up to 5 files. Customizable `endpoint`, `accept`, and `maxFiles`.
+**`AttachmentUpload`:** multi-file, chat-style interface with a compact file card layout, dropdown menu for file selection and screenshot capture, and a textarea input. Files are queued and uploaded manually via the send button. Accepts images, PDF, and text; defaults to 5 files. Customizable `endpoint`, `accept`, and `maxFiles`.
 
 
 
@@ -333,7 +335,7 @@ This prevents memory leaks from orphaned blob URLs. Non-image files do not gener
 
 ### Progress tracking
 
-Upload progress is reported by UploadThing's `onUploadProgress` callback. The hook normalizes the raw progress value to an integer 0–100 via `Math.min(100, Math.max(0, Math.round(progress)))`. Progress is stored per-file in `FileEntry.progress` and rendered as a `<Progress>` bar component.
+Upload progress is reported by [UploadThing](https://uploadthing.com)'s `onUploadProgress` callback. The hook normalizes the raw progress value to an integer 0–100 via `Math.min(100, Math.max(0, Math.round(progress)))`. Progress is stored per-file in `FileEntry.progress` and rendered as a `<Progress>` bar component.
 
 ---
 
@@ -342,7 +344,7 @@ Upload progress is reported by UploadThing's `onUploadProgress` callback. The ho
 **One-time install copies.**\
 Files installed via `npx shadcn add` are copied into the consumer project. chute cannot push updates to existing installs. Re-run `npx shadcn add` to pick up new versions.
 
-**Only UploadThing.**\
+**Only [UploadThing](https://uploadthing.com).**\
 There is no provider abstraction layer. This keeps the code readable and avoids speculative complexity. A second provider can be added later only if it becomes a real need, not before.
 
 **Next.js App Router only.**\
@@ -354,7 +356,7 @@ The demo-mode `getUploadUser()` returns `{ uploadedBy: "demo-user" }` for all re
 **`entriesRef.current` mutation inside state updater.**\
 The ref is written inside `setFileEntries`'s updater function so that concurrent `addFiles` callers reading `entriesRef.current` (in the capacity check) see the latest value without waiting for a re-render. This is a deliberate tradeoff — the mutation is idempotent and invisible to React's rendering, but it violates the convention of keeping updaters pure.
 
-**No `AvatarUpload` or `FileList` standalone components.**\
+**No standalone `FileList` component.**\
 Only `UploadField` and its presets ship. Additional components will be added only if real adoption signals demand, not for speculative completeness.
 
 **Registry dependency URLs embed the origin.**\
