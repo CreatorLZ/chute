@@ -2,11 +2,17 @@
 
 import { useCallback, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, ArrowRight, Camera, X, Plus, FileText, Info } from "lucide-react";
 import {
-  AttachmentUpload,
-  AvatarUpload,
-} from "@/components/upload-presets";
+  Copy,
+  Check,
+  ArrowRight,
+  Camera,
+  X,
+  Plus,
+  FileText,
+  Info,
+} from "lucide-react";
+import { AttachmentUpload, AvatarUpload } from "@/components/upload-presets";
 import type { UploadFieldHandle } from "@/components/upload-field";
 import type { UploadedFile } from "@/hooks/use-upload-field";
 import { cn } from "@/lib/utils";
@@ -33,12 +39,12 @@ export default function Home() {
   // Lock body scroll when modal is open
   useEffect(() => {
     if (activeModal) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [activeModal]);
 
@@ -61,7 +67,7 @@ export default function Home() {
           transition={{ ...TRANSITION, delay: 0.1 }}
           className="max-w-[500px] text-lg text-muted-foreground leading-relaxed font-medium"
         >
-          File upload components for Next.js — powered by UploadThing. Two
+          File upload components for Next.js. Powered by UploadThing. Two
           presets, one engine, drop in and ship.
         </motion.p>
 
@@ -77,7 +83,8 @@ export default function Home() {
             className={cn(
               "group relative flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300",
               "bg-zinc-900 text-zinc-50 shadow-[0_4px_14px_0_rgb(0,0,0,15%)] hover:bg-zinc-800 hover:shadow-[0_6px_20px_rgba(0,0,0,23%)] active:scale-[0.97]",
-              copied && "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700",
+              copied &&
+                "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700",
             )}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -159,7 +166,6 @@ export default function Home() {
           </div>
         </PresetCard>
 
-
         {/* Documents & Attachments Card */}
         <PresetCard
           title="Documents & Attachments"
@@ -169,7 +175,9 @@ export default function Home() {
         >
           <div className="flex w-full max-w-[240px] flex-col gap-2 rounded-[20px] border border-zinc-200 bg-white p-2 shadow-sm">
             <div className="flex items-center gap-2 bg-zinc-50 p-2 rounded-[14px] border border-zinc-100">
-              <div className="size-8 rounded-[8px] bg-zinc-200/50 flex items-center justify-center"><FileText className="size-4 text-zinc-400" /></div>
+              <div className="size-8 rounded-[8px] bg-zinc-200/50 flex items-center justify-center">
+                <FileText className="size-4 text-zinc-400" />
+              </div>
               <div className="flex flex-col gap-1.5">
                 <div className="h-1.5 w-16 rounded-full bg-zinc-200" />
                 <div className="h-1 w-10 rounded-full bg-zinc-100" />
@@ -240,7 +248,9 @@ function PresetCard({
         </div>
       </div>
       <div className="flex items-center justify-between px-3 py-4">
-        <h2 className="text-[15px] font-bold text-zinc-900 tracking-tight">{title}</h2>
+        <h2 className="text-[15px] font-bold text-zinc-900 tracking-tight">
+          {title}
+        </h2>
         <span className="text-[13px] font-medium text-zinc-500">{tag}</span>
       </div>
     </motion.button>
@@ -266,11 +276,13 @@ function PresetModal({
       if (e.key === "Tab") {
         if (!modalRef.current) return;
         const focusableElements = modalRef.current.querySelectorAll(
-          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
         );
         const firstElement = focusableElements[0] as HTMLElement;
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-        
+        const lastElement = focusableElements[
+          focusableElements.length - 1
+        ] as HTMLElement;
+
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             lastElement?.focus();
@@ -286,10 +298,10 @@ function PresetModal({
     };
 
     const previouslyFocusedElement = document.activeElement as HTMLElement;
-    
+
     if (modalRef.current) {
       const focusableElements = modalRef.current.querySelectorAll(
-        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
       );
       if (focusableElements.length) {
         (focusableElements[0] as HTMLElement).focus();
@@ -306,7 +318,13 @@ function PresetModal({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-desc"
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -326,8 +344,15 @@ function PresetModal({
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 px-6 py-5 gap-4">
           <div className="flex flex-col gap-0.5">
-            <h2 id="modal-title" className="text-lg font-bold text-zinc-900 tracking-tight">{title}</h2>
-            <p id="modal-desc" className="text-sm text-zinc-500 font-medium">{description}</p>
+            <h2
+              id="modal-title"
+              className="text-lg font-bold text-zinc-900 tracking-tight"
+            >
+              {title}
+            </h2>
+            <p id="modal-desc" className="text-sm text-zinc-500 font-medium">
+              {description}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -336,7 +361,7 @@ function PresetModal({
             <X className="size-4" />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto bg-zinc-50/50 p-6 sm:p-10">
           <div className="flex items-center justify-center w-full">
             {children}
@@ -357,38 +382,35 @@ function AvatarUploadDemo() {
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
-      <AvatarUpload
-        ref={ref}
-        value={value}
-        onChange={setValue}
-      />
-      
-      {value && (
-         <div className="w-full max-w-md rounded-2xl border border-zinc-200/60 bg-white overflow-hidden shadow-sm">
-           <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-4 py-3">
-             <div className="flex items-center gap-2">
-               <div className="size-2 rounded-full bg-zinc-300" />
-               <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Output State</span>
-             </div>
-             <div className="group relative flex items-center justify-center">
-               <Info className="size-4 text-zinc-400 hover:text-zinc-600 transition-colors" />
-               <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-50 shadow-lg group-hover:block z-50">
-                 This JSON output is only for the demo page to show what data your app receives.
-               </div>
-             </div>
-           </div>
-           <div className="p-4 overflow-auto max-h-[200px]">
-             <pre className="text-xs text-zinc-600 font-mono">
-               {JSON.stringify(value, null, 2)}
-             </pre>
-           </div>
-         </div>
-      )}
+      <AvatarUpload ref={ref} value={value} onChange={setValue} />
 
+      {value && (
+        <div className="w-full max-w-md rounded-2xl border border-zinc-200/60 bg-white overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-zinc-300" />
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Output State
+              </span>
+            </div>
+            <div className="group relative flex items-center justify-center">
+              <Info className="size-4 text-zinc-400 hover:text-zinc-600 transition-colors" />
+              <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-50 shadow-lg group-hover:block z-50">
+                This JSON output is only for the demo page to show what data
+                your app receives.
+              </div>
+            </div>
+          </div>
+          <div className="p-4 overflow-auto max-h-[200px]">
+            <pre className="text-xs text-zinc-600 font-mono">
+              {JSON.stringify(value, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 
 function DocumentUploadDemo() {
   const ref = useRef<UploadFieldHandle>(null);
@@ -397,35 +419,33 @@ function DocumentUploadDemo() {
   return (
     <div className="flex w-full flex-col items-center gap-8">
       <div className="w-full max-w-md">
-        <AttachmentUpload
-          ref={ref}
-          value={value}
-          onChange={setValue}
-        />
+        <AttachmentUpload ref={ref} value={value} onChange={setValue} />
       </div>
 
       {value && value.length > 0 && (
-         <div className="w-full max-w-md rounded-2xl border border-zinc-200/60 bg-white overflow-hidden shadow-sm">
-           <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-4 py-3">
-             <div className="flex items-center gap-2">
-               <div className="size-2 rounded-full bg-zinc-300" />
-               <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Output State</span>
-             </div>
-             <div className="group relative flex items-center justify-center">
-               <Info className="size-4 text-zinc-400 hover:text-zinc-600 transition-colors" />
-               <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-50 shadow-lg group-hover:block z-50">
-                 This JSON output is only for the demo page to show what data your app receives.
-               </div>
-             </div>
-           </div>
-           <div className="p-4 overflow-auto max-h-[200px]">
-             <pre className="text-xs text-zinc-600 font-mono">
-               {JSON.stringify(value, null, 2)}
-             </pre>
-           </div>
-         </div>
+        <div className="w-full max-w-md rounded-2xl border border-zinc-200/60 bg-white overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-zinc-300" />
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Output State
+              </span>
+            </div>
+            <div className="group relative flex items-center justify-center">
+              <Info className="size-4 text-zinc-400 hover:text-zinc-600 transition-colors" />
+              <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-50 shadow-lg group-hover:block z-50">
+                This JSON output is only for the demo page to show what data
+                your app receives.
+              </div>
+            </div>
+          </div>
+          <div className="p-4 overflow-auto max-h-[200px]">
+            <pre className="text-xs text-zinc-600 font-mono">
+              {JSON.stringify(value, null, 2)}
+            </pre>
+          </div>
+        </div>
       )}
-
     </div>
   );
 }
