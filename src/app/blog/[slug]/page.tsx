@@ -27,6 +27,7 @@ export default async function PostPage({
         post={post}
         imageBaseUrl={API_URL}
         shareUrl={url}
+        tracking={{ publicKey: process.env.NEXT_PUBLIC_QEWORLDLY_PUBLIC_KEY!, apiOrigin: API_URL }}
       />
       <QewordlyJsonLd data={getPostJsonLd(post, { url, imageBaseUrl: API_URL })} />
     </main>
