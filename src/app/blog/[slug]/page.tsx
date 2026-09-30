@@ -1,4 +1,4 @@
-import { QewordlyPost, getPostMetadata } from "@qewordly/react";
+import { QewordlyPost, QewordlyJsonLd, getPostMetadata, getPostJsonLd } from "@qewordly/react";
 import { qw, API_URL } from "@/lib/qw";
 import { notFound } from "next/navigation";
 
@@ -20,13 +20,15 @@ export default async function PostPage({
 }) {
   const post = await qw.getPost((await params).slug, { revalidate: 60 });
   if (!post) notFound();
+  const url = `${process.env.SITE_DOMAIN ?? "https://chuteui.vercel.app"}/blog/${post.slug}`;
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <QewordlyPost
         post={post}
         imageBaseUrl={API_URL}
-        shareUrl={`${process.env.SITE_DOMAIN ?? "https://chuteui.vercel.app"}/blog/${post.slug}`}
+        shareUrl={url}
       />
+      <QewordlyJsonLd data={getPostJsonLd(post, { url, imageBaseUrl: API_URL })} />
     </main>
   );
 }
